@@ -1,0 +1,87 @@
+# Dependencies
+node_modules/
+
+# Environment
+.env
+.env.local
+.env.*.local
+*.env
+
+# Build outputs
+dist/
+dist-electron/
+release/
+.expo/
+web-build/
+*.tsbuildinfo
+
+# Turbo
+.turbo/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+.eggs/
+*.egg
+.venv/
+venv/
+env/
+
+# IDE / Editor
+.idea/
+.vscode/*
+!.vscode/tasks.json
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Documentation (large binaries, local drafts)
+documentations/
+documentations pages/
+*.pdf
+*.pages
+
+
+# Mobile / Expo
+expo-env.d.ts
+.metro-health-check*
+.ios/
+.android/
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+*.pem
+
+# Electron
+release/
+
+# Test / Coverage
+coverage/
+.nyc_output/
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Supabase migrations (managed separately)
+apps/backend/supabase/migrations/
+
+# Misc
+All
+*.orig.*
+.cache/

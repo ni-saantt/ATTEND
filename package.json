@@ -1,0 +1,31 @@
+{
+  "name": "attend",
+  "version": "1.0.0",
+  "private": true,
+  "packageManager": "npm@10.2.0",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "overrides": {
+    "react": "19.1.0",
+    "react-native": "0.81.5"
+  },
+  "scripts": {
+    "build": "turbo run build",
+    "build:shared": "turbo run build --filter=@attend/shared",
+    "build:mobile": "turbo run build --filter=mobile",
+    "build:desktop": "turbo run build --filter=admin-desktop",
+    "dev": "turbo run dev",
+    "mobile": "cd apps/mobile && EXPO_ROUTER_APP_ROOT=./app npx expo start",
+    "desktop": "turbo run dev --filter=admin-desktop",
+    "backend": "cd apps/backend && uvicorn app.main:app --reload --host 0.0.0.0",
+    "check-setup": "bash scripts/check-dev-setup.sh"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2",
+    "kill-port": "^1.0.1",
+    "turbo": "^2.3.0",
+    "typescript": "^5.3.0"
+  }
+}

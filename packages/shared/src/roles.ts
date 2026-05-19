@@ -1,0 +1,15 @@
+export const ROLES = {
+  PLATFORM_ADMIN: 'PLATFORM_ADMIN',
+  SUPER_ADMIN: 'SUPER_ADMIN',
+  DEPARTMENT_ADMIN: 'DEPARTMENT_ADMIN',
+  TEACHER: 'TEACHER',
+} as const;
+
+export type Role = (typeof ROLES)[keyof typeof ROLES];
+
+export const ROLE_HIERARCHY: Record<Role, Role[]> = {
+  PLATFORM_ADMIN: ['SUPER_ADMIN'],
+  SUPER_ADMIN: ['DEPARTMENT_ADMIN'],
+  DEPARTMENT_ADMIN: ['TEACHER'],
+  TEACHER: [],
+};

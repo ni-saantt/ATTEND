@@ -1,0 +1,15 @@
+version: '3.8'
+
+services:
+  backend:
+    build: ./apps/backend
+    ports:
+      - "8000:8000"
+    environment:
+      - SUPABASE_URL=${SUPABASE_URL}
+      - SUPABASE_SERVICE_KEY=${SUPABASE_SERVICE_KEY}
+      - JWT_SECRET=${JWT_SECRET}
+      - RECOGNITION_THRESHOLD=${RECOGNITION_THRESHOLD:-0.5}
+      - FACE_EXECUTION_PROVIDER=${FACE_EXECUTION_PROVIDER:-cpu}
+    env_file:
+      - ./apps/backend/.env

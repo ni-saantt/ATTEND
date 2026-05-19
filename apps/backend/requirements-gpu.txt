@@ -1,0 +1,4 @@
+# GPU support for face recognition (Linux + NVIDIA CUDA)
+# Install: pip install -r requirements.txt -r requirements-gpu.txt
+# Set FACE_EXECUTION_PROVIDER=cuda (or auto on Linux)
+onnxruntime-gpu>=1.16.0
