@@ -55,6 +55,16 @@ documentations pages/
 *.pdf
 *.pages
 
+# LaTeX build artifacts (keep .tex and build.sh only)
+*.aux
+*.fdb_latexmk
+*.fls
+*.out
+*.toc
+*.lof
+*.lot
+*.synctex.gz
+
 
 # Mobile / Expo
 expo-env.d.ts
