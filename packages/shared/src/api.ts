@@ -17,6 +17,7 @@ export const ENDPOINTS = {
   
   // Sections
   subjectSections: (subjectId: string) => `/api/v1/subjects/${subjectId}/sections`,
+  subjectEnrolledStudentIds: (subjectId: string) => `/api/v1/subjects/${subjectId}/enrolled-student-ids`,
   sectionById: (sectionId: string) => `/api/v1/sections/${sectionId}`,
   sectionTeachers: (sectionId: string) => `/api/v1/sections/${sectionId}/teachers`,
   sectionTeacher: (sectionId: string, teacherId: string) => `/api/v1/sections/${sectionId}/teachers/${teacherId}`,
