@@ -55,6 +55,21 @@ def _is_teacher_for_section(supabase, user_id: str, section_id: str) -> bool:
     return bool(result.data)
 
 
+def _student_ids_in_other_sections_of_subject(supabase, subject_id: str, section_id: str, student_ids: List[str]) -> List[str]:
+    """Return student_ids that are already in another section of the same subject (not in section_id)."""
+    if not student_ids:
+        return []
+    other = supabase.table("sections").select("id").eq("subject_id", subject_id).neq("id", section_id).execute()
+    other_section_ids = [r["id"] for r in (other.data or [])]
+    if not other_section_ids:
+        return []
+    student_set = set(student_ids)
+    # One query: section_students where section_id in other_section_ids
+    result = supabase.table("section_students").select("student_id").in_("section_id", other_section_ids).execute()
+    conflicting = [r["student_id"] for r in (result.data or []) if r["student_id"] in student_set]
+    return list(dict.fromkeys(conflicting))  # preserve order, no duplicates
+
+
 # ==================== SECTION CRUD ====================
 
 @router.post("/subjects/{subject_id}/sections")
@@ -104,6 +119,25 @@ def list_sections(
     
     result = supabase.table("sections").select("*").eq("subject_id", subject_id).order("name").execute()
     return result.data or []
+
+
+@router.get("/subjects/{subject_id}/enrolled-student-ids")
+def get_subject_enrolled_student_ids(
+    subject_id: str,
+    user: dict = Depends(get_current_user),
+):
+    """Return student IDs that are in any section of this subject (for one-section-per-student-per-subject rule)."""
+    supabase = get_supabase()
+    subj = supabase.table("subjects").select("id").eq("id", subject_id).execute()
+    if not subj.data:
+        raise HTTPException(status_code=404, detail="Subject not found")
+    section_ids_result = supabase.table("sections").select("id").eq("subject_id", subject_id).execute()
+    section_ids = [r["id"] for r in (section_ids_result.data or [])]
+    if not section_ids:
+        return {"student_ids": []}
+    result = supabase.table("section_students").select("student_id").in_("section_id", section_ids).execute()
+    student_ids = list(dict.fromkeys(r["student_id"] for r in (result.data or [])))
+    return {"student_ids": student_ids}
 
 
 @router.get("/sections/{section_id}")
@@ -257,6 +291,24 @@ def assign_students_to_section(
             raise HTTPException(status_code=403, detail="You are not assigned to this section")
     elif not _can_manage_section(user, section["department_id"]):
         raise HTTPException(status_code=403, detail="Cannot assign students to this section")
+
+    subject_id = section.get("subject_id")
+    if subject_id and req.student_ids:
+        conflicting = _student_ids_in_other_sections_of_subject(
+            supabase, subject_id, section_id, req.student_ids
+        )
+        if conflicting:
+            raise HTTPException(
+                status_code=400,
+                detail={
+                    "message": (
+                        "A student can only be in one section per subject. "
+                        "Some students are already in another section of this subject. "
+                        "Remove them from that section first."
+                    ),
+                    "conflicting_student_ids": conflicting,
+                },
+            )
     
     rows = [{"section_id": section_id, "student_id": sid} for sid in req.student_ids]
     if rows:
@@ -324,17 +376,16 @@ def remove_student_from_section(
 def get_my_sections(
     user: dict = Depends(require_teacher),
 ):
-    """Get sections assigned to the current teacher, grouped by subject."""
+    """Get sections assigned to the current user (teacher or dept admin). Only returns sections where user is in section_teachers."""
     supabase = get_supabase()
     user_id = user.get("user_id") or user.get("sub")
     role = user.get("role")
-    
-    if role == "TEACHER":
+
+    if role in ("TEACHER", "DEPARTMENT_ADMIN"):
         st_result = supabase.table("section_teachers").select("section_id").eq("teacher_id", user_id).execute()
         section_ids = [r["section_id"] for r in (st_result.data or [])]
         if not section_ids:
             return []
-        
         sections_result = supabase.table("sections").select("*, subjects(id, name, department_id)").in_("id", section_ids).execute()
     else:
         dept_id = user.get("department_id")
