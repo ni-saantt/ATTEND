@@ -8,6 +8,7 @@ supabase>=2.9.0
 httpx>=0.26.0
 sqlalchemy==2.0.25
 asyncpg==0.29.0
+onnxruntime>=1.16.0
 insightface==0.7.3
 faiss-cpu==1.7.4
 opencv-python-headless==4.9.0.80
