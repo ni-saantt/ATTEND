@@ -2,22 +2,24 @@
 
 ## Quick Start
 
-1. **Terminal 1 – Backend**
-   ```bash
-   npm run backend
-   ```
-   Must show: `Uvicorn running on http://0.0.0.0:8000`
+**From repo root (recommended)** — starts backend, mobile, Expo, and admin-desktop together:
 
-2. **Terminal 2 – Mobile**
-   ```bash
-   cd apps/mobile && npx expo start --clear
-   ```
+```bash
+npm run dev
+```
 
-3. **Scan QR code** with Expo Go on your phone.
+Backend must show `Uvicorn running on http://0.0.0.0:8000` in the Turbo logs. Scan the Expo QR code with Expo Go on your phone.
 
-## How It Works
+**Or run mobile only** (if backend is already running):
 
-The app uses the **same host as Expo/Metro** for the API. If the app loads, the API URL is derived from that host (port 8000). No manual IP configuration needed.
+```bash
+cd apps/mobile && npx expo start --clear
+```
+
+The app uses the **same host as Expo/Metro** for the API (`apps/mobile/lib/api.ts`). When you scan the QR code on a physical device, the backend URL is `http://<your-lan-ip>:8000` automatically — no manual IP needed if phone and computer share WiFi.
+
+**Optional override:** set `EXPO_PUBLIC_API_URL=http://YOUR_IP:8000` in `apps/mobile/.env`, then restart Expo with `--clear`.
+Find IP: `ipconfig getifaddr en0` (macOS).
 
 ## If Connection Fails
 
