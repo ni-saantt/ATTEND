@@ -1,31 +1,35 @@
-import { StyleSheet, View, Text, Image } from 'react-native';
+import { StyleSheet, View, Text, Image, useColorScheme } from 'react-native';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { ScreenContainer } from '@/components/layout';
 import { GlassCard, GlassButton, IconBadge } from '@/components/ui';
-import { colors, spacing, typography } from '@/theme';
+import { useThemeColors, spacing, typography } from '@/theme';
 
 const logoDark = require('@/assets/images/logo-dark.png');
+const logoLight = require('@/assets/images/logo-light.png');
 
 export default function SignUpScreen() {
+  const colors = useThemeColors();
+  const isDark = useColorScheme() !== 'light';
+
   return (
     <ScreenContainer safeBottom>
       <View style={styles.container}>
-        <Image source={logoDark} style={styles.logo} resizeMode="contain" />
+        <Image source={isDark ? logoDark : logoLight} style={styles.logo} resizeMode="contain" />
 
         <GlassCard style={styles.card}>
           <IconBadge variant="primary" size="lg" style={styles.iconBadge}>
             <Ionicons name="information-circle" size={28} color={colors.primary} />
           </IconBadge>
 
-          <Text style={styles.title}>Create Account</Text>
+          <Text style={[styles.title, { color: colors.textPrimary }]}>Create Account</Text>
 
-          <Text style={styles.subtitle}>
+          <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
             Attend accounts are created by your administrator. Contact your
             department admin or college admin to get an account.
           </Text>
 
-          <Text style={styles.note}>
+          <Text style={[styles.note, { color: colors.textMuted }]}>
             Teachers and admins are added by their department or college
             administrator.
           </Text>
@@ -65,19 +69,16 @@ const styles = StyleSheet.create({
   },
   title: {
     ...typography.h2,
-    color: colors.textPrimary,
     textAlign: 'center',
     marginBottom: spacing.lg,
   },
   subtitle: {
     ...typography.body,
-    color: colors.textSecondary,
     textAlign: 'center',
     marginBottom: spacing.lg,
   },
   note: {
     ...typography.bodySmall,
-    color: colors.textMuted,
     textAlign: 'center',
   },
   button: {

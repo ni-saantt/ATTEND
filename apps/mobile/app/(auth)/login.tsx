@@ -33,15 +33,18 @@ export default function LoginScreen() {
 
   const testConnection = async () => {
     try {
-      const { data } = await api.get('/health');
+      const { data } = await api.get('/health', { timeout: 10000 });
       Alert.alert(
         'Connection OK',
         `Backend at ${API_BASE} responded: ${JSON.stringify(data)}`
       );
     } catch (e: any) {
+      const isTimeout = e?.code === 'ECONNABORTED' || e?.message?.toLowerCase().includes('timeout');
       const msg = e?.response
         ? `Server error: ${e.response.status}`
-        : `Cannot reach ${API_BASE}`;
+        : isTimeout
+          ? `Timed out. Using: ${API_BASE}\n\nStart backend (npm run dev), same WiFi. Or set EXPO_PUBLIC_API_URL in apps/mobile/.env`
+          : `Cannot reach: ${API_BASE}\n\n1) npm run dev (backend on :8000)\n2) Phone & computer on same WiFi\n3) Restart Expo: npx expo start --clear\n4) Or set EXPO_PUBLIC_API_URL in apps/mobile/.env`;
       Alert.alert('Connection Failed', msg);
     }
   };
@@ -56,8 +59,11 @@ export default function LoginScreen() {
       return;
     }
     setLoading(true);
+    const safetyTimer = setTimeout(() => setLoading(false), 20000);
     try {
-      const { data } = await api.post(ENDPOINTS.LOGIN, parseResult.data);
+      const { data } = await api.post(ENDPOINTS.LOGIN, parseResult.data, {
+        timeout: 25000, // allow time on slow networks; backend must be reachable at API_BASE (see Test connection)
+      });
       const parsed = loginResponseSchema.parse(data);
       setAuth(parsed.access_token, parsed.user);
       router.replace('/(tabs)');
@@ -74,8 +80,8 @@ export default function LoginScreen() {
           e?.code === 'ECONNABORTED' ||
           e?.message?.toLowerCase().includes('timeout');
         const msg = isTimeout
-          ? 'Request timed out. Ensure the backend is running (npm run backend).'
-          : `Could not reach ${API_BASE}. Same WiFi? Backend running? Try: ipconfig getifaddr en0`;
+          ? `Request timed out. Backend: ${API_BASE}\n\n1) npm run dev  2) Same WiFi  3) Tap "Test connection"`
+          : `Could not reach ${API_BASE}. Same WiFi? Run npm run dev. Try "Test connection".`;
         Alert.alert('Connection Failed', msg);
       } else {
         Alert.alert(
@@ -84,6 +90,7 @@ export default function LoginScreen() {
         );
       }
     } finally {
+      clearTimeout(safetyTimer);
       setLoading(false);
     }
   };
