@@ -11,7 +11,7 @@ import { useRouter, useLocalSearchParams } from 'expo-router';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import { BlurView } from 'expo-blur';
 import { Ionicons } from '@expo/vector-icons';
-import { API_BASE } from '@/lib/api';
+import { api } from '@/lib/api';
 import { ENDPOINTS } from '@attend/shared';
 import { GlassButton } from '@/components/ui';
 import { useThemeColors, colors as staticColors, spacing, typography, borderRadius } from '@/theme';
@@ -87,26 +87,30 @@ export default function AddFaceCameraScreen() {
         formData.append('right', file);
       }
 
-      const token = require('@/store/auth').useAuthStore.getState().token;
-      const url = `${API_BASE}${ENDPOINTS.addStudentFace(sid)}`;
-      const res = await fetch(url, {
+      const res = await fetch(`${api.defaults.baseURL}${ENDPOINTS.addStudentFace(sid)}`, {
         method: 'POST',
-        headers: { Authorization: `Bearer ${token}` },
+        headers: {
+          Authorization: `Bearer ${require('@/store/auth').useAuthStore.getState().token}`,
+        },
         body: formData,
       });
-
       if (!res.ok) {
-        const errData = await res.json().catch(() => ({}));
-        throw new Error(errData.detail ?? `Upload failed: ${res.status}`);
+        let errData;
+        try { errData = await res.json(); } catch (e) {}
+        throw { response: { status: res.status, data: errData }, message: errData?.detail || 'Upload failed' };
       }
 
       Alert.alert('Success', `${title} added successfully.`, [
         { text: 'OK', onPress: () => router.back() },
       ]);
     } catch (e) {
-      const err = e as Error & { response?: { data?: { detail?: string } } };
+      const err = e as Error & { response?: { data?: { detail?: string }; status?: number }; code?: string };
+      const isNetworkError = !err?.response || err?.code === 'ECONNABORTED' || err?.code === 'ERR_NETWORK' || String(err?.message ?? '').toLowerCase().includes('network');
       const msg = err?.response?.data?.detail ?? err?.message ?? 'Upload failed';
-      Alert.alert('Failed', msg);
+      const fullMsg = isNetworkError
+        ? `${msg}\n\nEnsure your phone and computer are on the same Wi‑Fi, the backend is running, and the IP in apps/mobile/lib/api.ts matches your computer.`
+        : msg;
+      Alert.alert('Failed', fullMsg);
     } finally {
       setCapturing(false);
       setUploading(false);

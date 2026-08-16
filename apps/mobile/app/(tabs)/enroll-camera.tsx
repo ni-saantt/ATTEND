@@ -144,21 +144,18 @@ export default function EnrollCameraScreen() {
       );
 
       const token = require('@/store/auth').useAuthStore.getState().token;
-      await api.post(ENDPOINTS.ENROLL_STUDENT, formData, {
-        timeout: 30000,
+      const res = await fetch(`${api.defaults.baseURL}${ENDPOINTS.ENROLL_STUDENT}`, {
+        method: 'POST',
         headers: {
           Authorization: `Bearer ${token}`,
         },
-        transformRequest: [
-          (data, headers) => {
-            if (data instanceof FormData) {
-              delete (headers as Record<string, unknown>)['Content-Type'];
-              return data;
-            }
-            return data;
-          },
-        ],
+        body: formData,
       });
+      if (!res.ok) {
+        let errData;
+        try { errData = await res.json(); } catch (e) {}
+        throw { response: { status: res.status, data: errData }, message: errData?.detail || 'Connection failed' };
+      }
       Alert.alert('Success', `${params.name} enrolled successfully.`, [
         { text: 'OK', onPress: () => router.back() },
       ]);
@@ -179,7 +176,7 @@ export default function EnrollCameraScreen() {
         !ax?.response
       ) {
         msg =
-          'Connection failed. Check your network and that the backend is running.';
+          'Connection failed. Check that your phone and computer are on the same Wi‑Fi, the backend is running, and the IP in apps/mobile/lib/api.ts matches your computer.';
       }
       const isFaceError =
         msg.toLowerCase().includes('face') ||
