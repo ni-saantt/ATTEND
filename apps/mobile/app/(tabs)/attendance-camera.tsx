@@ -90,23 +90,17 @@ export default function AttendanceCameraScreen() {
       const headers: Record<string, string> = { ...getAuthHeaders() };
       if (sid) formData.append('session_id', sid);
       const endpoint = isTestMode ? ENDPOINTS.RECOGNIZE_TEST : ENDPOINTS.RECOGNIZE;
-      const { data } = await api.post<{ results: RecognizeResult[]; image_width?: number; image_height?: number }>(
-        endpoint,
-        formData,
-        {
-          headers,
-          timeout: 60000,
-          transformRequest: [
-            (d: unknown, h: Record<string, string>) => {
-              if (d instanceof FormData) {
-                delete h['Content-Type'];
-                return d;
-              }
-              return d;
-            },
-          ],
-        }
-      );
+      const res = await fetch(`${api.defaults.baseURL}${endpoint}`, {
+        method: 'POST',
+        headers,
+        body: formData,
+      });
+      if (!res.ok) {
+        let errData;
+        try { errData = await res.json(); } catch(e){}
+        throw { response: { status: res.status, data: errData }, message: errData?.detail || 'Network Error' };
+      }
+      const data = await res.json();
       return { results: data?.results ?? [], imgW: data?.image_width ?? 1, imgH: data?.image_height ?? 1 };
     },
     [getAuthHeaders, isTestMode]
@@ -131,13 +125,17 @@ export default function AttendanceCameraScreen() {
       setResults(list);
       setSelected(new Set(list.map((_, i) => i).filter((i) => !list[i].unknown)));
     } catch (err: unknown) {
-      const ax = err as { response?: { data?: { detail?: string | unknown[] }; status?: number }; message?: string };
+      const ax = err as { response?: { data?: { detail?: string | unknown[] }; status?: number }; message?: string; code?: string };
       let msg = 'Please try again.';
       if (ax?.response?.data?.detail) {
         const d = ax.response.data.detail;
         msg = Array.isArray(d) ? (d[0] as { msg?: string })?.msg ?? JSON.stringify(d) : String(d);
       } else if (ax?.message) {
         msg = ax.message;
+      }
+      const isNetworkError = !ax?.response || ax?.code === 'ECONNABORTED' || ax?.code === 'ERR_NETWORK' || String(ax?.message ?? '').toLowerCase().includes('network');
+      if (isNetworkError) {
+        msg += `\n\nEnsure your phone and computer are on the same Wi‑Fi.\nDebug: ${ax?.message} (${ax?.code})`;
       }
       Alert.alert('Recognition Failed', msg);
     } finally {
@@ -197,23 +195,15 @@ export default function AttendanceCameraScreen() {
         name: 'frame.jpg',
       } as unknown as Blob);
       const endpoint = isTestMode ? ENDPOINTS.RECOGNIZE_TEST : ENDPOINTS.RECOGNIZE_STREAM;
-      const { data } = await api.post<{ results: RecognizeResult[]; image_width?: number; image_height?: number }>(
-        endpoint,
-        formData,
-        {
-          headers: getAuthHeaders(),
-          timeout: 60000,
-          transformRequest: [
-            (d: unknown, h: Record<string, string>) => {
-              if (d instanceof FormData) {
-                delete h['Content-Type'];
-                return d;
-              }
-              return d;
-            },
-          ],
-        }
-      );
+      const res = await fetch(`${api.defaults.baseURL}${endpoint}`, {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: formData,
+      });
+      if (!res.ok) {
+        throw new Error('Network Error');
+      }
+      const data = await res.json();
       const newResults = data?.results ?? [];
       const imgW = Math.max(1, data?.image_width ?? 1);
       const imgH = Math.max(1, data?.image_height ?? 1);
@@ -272,12 +262,10 @@ export default function AttendanceCameraScreen() {
                 if (sessionId && !isTestMode) {
                   const fd = new FormData();
                   fd.append('session_id', sessionId);
-                  api.post(ENDPOINTS.RECOGNIZE_STREAM_END, fd, {
+                  fetch(`${api.defaults.baseURL}${ENDPOINTS.RECOGNIZE_STREAM_END}`, {
+                    method: 'POST',
                     headers: getAuthHeaders(),
-                    transformRequest: [(d: unknown, h: Record<string, string>) => {
-                      if (d instanceof FormData) { delete h['Content-Type']; }
-                      return d;
-                    }],
+                    body: fd,
                   }).catch(() => {});
                 }
                 setSessionId(null);
@@ -354,17 +342,10 @@ export default function AttendanceCameraScreen() {
       try {
         const formData = new FormData();
         formData.append('session_id', sessionId);
-        await api.post(ENDPOINTS.RECOGNIZE_STREAM_END, formData, {
+        await fetch(`${api.defaults.baseURL}${ENDPOINTS.RECOGNIZE_STREAM_END}`, {
+          method: 'POST',
           headers: getAuthHeaders(),
-          transformRequest: [
-            (d: unknown, h: Record<string, string>) => {
-              if (d instanceof FormData) {
-                delete h['Content-Type'];
-                return d;
-              }
-              return d;
-            },
-          ],
+          body: formData,
         });
       } catch {
         // Ignore
