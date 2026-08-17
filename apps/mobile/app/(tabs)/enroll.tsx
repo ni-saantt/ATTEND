@@ -119,8 +119,8 @@ export default function EnrollScreen() {
         contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}
       >
-        <View style={styles.actionsRow}>
-          {isSuperAdmin && (
+        {isSuperAdmin && (
+          <View style={styles.actionsRow}>
             <TouchableOpacity
               style={[styles.quickAction, styles.quickActionSuccess]}
               onPress={() => router.push('/(tabs)/create-department-admin')}
@@ -134,30 +134,8 @@ export default function EnrollScreen() {
                 Create Dept Admin
               </Text>
             </TouchableOpacity>
-          )}
-          {isDeptAdmin && (
-            <TouchableOpacity
-              style={[styles.quickAction, styles.quickActionInfo]}
-              onPress={() => router.push('/(tabs)/create-teacher')}
-            >
-              <Ionicons name="school" size={18} color={colors.info} />
-              <Text style={[styles.quickActionText, { color: colors.info }]}>
-                Add Teacher
-              </Text>
-            </TouchableOpacity>
-          )}
-          {!isTeacher && (
-            <TouchableOpacity
-              style={styles.quickAction}
-              onPress={() => router.push('/(tabs)/student-list')}
-            >
-              <Ionicons name="people" size={18} color={colors.primary} />
-              <Text style={[styles.quickActionText, { color: colors.primary }]}>
-                View Students
-              </Text>
-            </TouchableOpacity>
-          )}
-        </View>
+          </View>
+        )}
 
         <Text style={[styles.stepTitle, { color: colors.textPrimary }]}>Step 1: Select Department</Text>
         <Text style={[styles.stepHint, { color: colors.textMuted }]}>

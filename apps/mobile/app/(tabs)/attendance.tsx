@@ -3,11 +3,12 @@ import { StyleSheet, TouchableOpacity, ScrollView, View, Text } from 'react-nati
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuthStore } from '@/store/auth';
-import { useSubjects, useSections } from '@/lib/queries';
+import { useMySections } from '@/lib/queries';
 import { GlassCard, GlassButton, IconBadge } from '@/components/ui';
 import { useThemeColors, colors as staticColors, spacing, typography, shadows } from '@/theme';
 
-type Section = { id: string; name: string; subject_id: string };
+type MySectionItem = { id: string; name: string; created_at?: string };
+type MySectionsSubject = { subject_id: string; subject_name: string; sections: MySectionItem[] };
 
 export default function AttendanceScreen() {
   const colors = useThemeColors();
@@ -16,21 +17,22 @@ export default function AttendanceScreen() {
   const [selectedSubject, setSelectedSubject] = useState<string | null>(null);
   const [selectedSection, setSelectedSection] = useState<string | null>(null);
 
-  const isTeacher = user?.role === 'TEACHER';
   const isSuperAdmin = user?.role === 'SUPER_ADMIN';
-  const { data: subjects = [] } = useSubjects(
-    user?.department_id ?? null,
-    !!isTeacher
-  );
-  const { data: sections = [], isLoading: sectionsLoading } = useSections(selectedSubject);
+  const isTeacherOrDeptAdmin = user?.role === 'TEACHER' || user?.role === 'DEPARTMENT_ADMIN';
+  const { data: mySectionsData = [], isLoading: mySectionsLoading } = useMySections();
+
+  const mySections = mySectionsData as MySectionsSubject[];
+  const subjectsFromMySections = mySections.map((s) => ({ id: s.subject_id, name: s.subject_name }));
+  const selectedSubjectData = mySections.find((s) => s.subject_id === selectedSubject);
+  const sectionsFromMySections = selectedSubjectData?.sections ?? [];
 
   useEffect(() => {
     setSelectedSection(null);
   }, [selectedSubject]);
 
   const handleTakeAttendance = () => {
-    const subject = subjects.find((s: any) => s.id === selectedSubject);
-    const section = (sections as Section[]).find((s) => s.id === selectedSection);
+    const subject = subjectsFromMySections.find((s) => s.id === selectedSubject);
+    const section = sectionsFromMySections.find((s) => s.id === selectedSection);
     router.push({
       pathname: '/(tabs)/attendance-camera',
       params: {
@@ -61,6 +63,35 @@ export default function AttendanceScreen() {
             Teachers can take attendance.
           </Text>
         </GlassCard>
+      </View>
+    );
+  }
+
+  if (mySectionsLoading) {
+    return (
+      <View style={[styles.container, styles.centered, { backgroundColor: colors.background }]}>
+        <Text style={[styles.loadingText, { color: colors.textMuted }]}>Loading...</Text>
+      </View>
+    );
+  }
+
+  if (mySections.length === 0 && isTeacherOrDeptAdmin) {
+    return (
+      <View style={[styles.container, { backgroundColor: colors.background }]}>
+        <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+          <Text style={[styles.title, { color: colors.textPrimary }]}>Take Attendance</Text>
+          <GlassCard variant="solid">
+            <View style={styles.emptyStateContent}>
+              <Ionicons name="people-outline" size={48} color={colors.textMuted} />
+              <Text style={[styles.emptyStateTitle, { color: colors.textPrimary }]}>
+                No sections assigned
+              </Text>
+              <Text style={[styles.emptyStateText, { color: colors.textSecondary }]}>
+                You can only take attendance for sections you are assigned to. Contact your department admin to get assigned to a section.
+              </Text>
+            </View>
+          </GlassCard>
+        </ScrollView>
       </View>
     );
   }
@@ -97,9 +128,9 @@ export default function AttendanceScreen() {
         </TouchableOpacity>
       )}
 
-      {(subjects.length > 0 || !isSuperAdmin) && (
+      {subjectsFromMySections.length > 0 && (
         <>
-          {isSuperAdmin && subjects.length > 0 && (
+          {isSuperAdmin && subjectsFromMySections.length > 0 && (
             <View style={styles.dividerContainer}>
               <View style={styles.dividerLine} />
               <Text style={[styles.dividerText, { color: colors.textMuted }]}>or take attendance</Text>
@@ -109,13 +140,13 @@ export default function AttendanceScreen() {
 
           <Text style={[styles.stepLabel, { color: colors.textMuted }]}>STEP 1: SELECT SUBJECT</Text>
           <GlassCard style={styles.subjectsCard} variant="solid">
-            {subjects.map((s: any, index: number) => (
+            {subjectsFromMySections.map((s, index) => (
               <TouchableOpacity
                 key={s.id}
                 style={[
                   styles.subjectItem,
                   selectedSubject === s.id && styles.subjectItemActive,
-                  index < subjects.length - 1 && styles.subjectItemBorder,
+                  index < subjectsFromMySections.length - 1 && styles.subjectItemBorder,
                 ]}
                 onPress={() => setSelectedSubject(s.id)}
                 activeOpacity={0.7}
@@ -159,26 +190,24 @@ export default function AttendanceScreen() {
           {selectedSubject && (
             <>
               <Text style={[styles.stepLabel, { color: colors.textMuted }]}>STEP 2: SELECT SECTION</Text>
-              {sectionsLoading ? (
-                <Text style={[styles.loadingText, { color: colors.textMuted }]}>Loading sections...</Text>
-              ) : (sections as Section[]).length === 0 ? (
+              {sectionsFromMySections.length === 0 ? (
                 <GlassCard variant="solid" style={styles.noSectionsCard}>
                   <View style={styles.noSectionsContent}>
                     <Ionicons name="information-circle-outline" size={24} color={colors.textMuted} />
                     <Text style={[styles.noSectionsText, { color: colors.textSecondary }]}>
-                      No sections found for this subject. Attendance will be taken for all enrolled students.
+                      No sections found for this subject.
                     </Text>
                   </View>
                 </GlassCard>
               ) : (
                 <GlassCard style={styles.subjectsCard} variant="solid">
-                  {(sections as Section[]).map((s, index) => (
+                  {sectionsFromMySections.map((s, index) => (
                     <TouchableOpacity
                       key={s.id}
                       style={[
                         styles.subjectItem,
                         selectedSection === s.id && styles.subjectItemActive,
-                        index < (sections as Section[]).length - 1 && styles.subjectItemBorder,
+                        index < sectionsFromMySections.length - 1 && styles.subjectItemBorder,
                       ]}
                       onPress={() => setSelectedSection(s.id)}
                       activeOpacity={0.7}
@@ -225,7 +254,7 @@ export default function AttendanceScreen() {
             variant="primary"
             size="lg"
             onPress={handleTakeAttendance}
-            disabled={!selectedSubject || ((sections as Section[]).length > 0 && !selectedSection)}
+            disabled={!selectedSubject || (sectionsFromMySections.length > 0 && !selectedSection)}
             style={styles.cameraButton}
             leftIcon={
               <Ionicons
@@ -247,6 +276,10 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
+  centered: {
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   content: {
     padding: spacing.lg,
     paddingBottom: spacing.xxxl,
@@ -265,6 +298,21 @@ const styles = StyleSheet.create({
     ...typography.body,
     color: staticColors.textSecondary,
     textAlign: 'center',
+  },
+  emptyStateContent: {
+    alignItems: 'center',
+    padding: spacing.xl,
+  },
+  emptyStateTitle: {
+    ...typography.h3,
+    marginTop: spacing.md,
+    marginBottom: spacing.sm,
+    textAlign: 'center',
+  },
+  emptyStateText: {
+    ...typography.body,
+    textAlign: 'center',
+    color: staticColors.textSecondary,
   },
   testCard: {
     flexDirection: 'row',
