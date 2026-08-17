@@ -72,6 +72,20 @@ export function useStudents(collegeId: string | null, departmentId: string | nul
   });
 }
 
+export function useUsers(collegeId: string | null, departmentId: string | null, enabled: boolean) {
+  return useQuery({
+    queryKey: ['users', collegeId, departmentId],
+    queryFn: async () => {
+      const params = new URLSearchParams();
+      if (collegeId) params.set('college_id', collegeId);
+      if (departmentId) params.set('department_id', departmentId);
+      const { data } = await api.get(`${ENDPOINTS.USERS}?${params.toString()}`);
+      return data ?? [];
+    },
+    enabled,
+  });
+}
+
 // Section queries
 export function useSections(subjectId: string | null) {
   return useQuery({
@@ -102,6 +116,17 @@ export function useSectionStudents(sectionId: string | null) {
       return data ?? [];
     },
     enabled: !!sectionId,
+  });
+}
+
+export function useSubjectEnrolledStudentIds(subjectId: string | null) {
+  return useQuery({
+    queryKey: ['subject-enrolled-student-ids', subjectId],
+    queryFn: async () => {
+      const { data } = await api.get(ENDPOINTS.subjectEnrolledStudentIds(subjectId!));
+      return (data?.student_ids ?? []) as string[];
+    },
+    enabled: !!subjectId,
   });
 }
 
@@ -190,6 +215,7 @@ export function useAssignStudentsToSection() {
     },
     onSuccess: (_, { sectionId }) => {
       queryClient.invalidateQueries({ queryKey: ['section-students', sectionId] });
+      queryClient.invalidateQueries({ queryKey: ['subject-enrolled-student-ids'] });
     },
   });
 }
@@ -202,6 +228,7 @@ export function useRemoveStudentFromSection() {
     },
     onSuccess: (_, { sectionId }) => {
       queryClient.invalidateQueries({ queryKey: ['section-students', sectionId] });
+      queryClient.invalidateQueries({ queryKey: ['subject-enrolled-student-ids'] });
     },
   });
 }
