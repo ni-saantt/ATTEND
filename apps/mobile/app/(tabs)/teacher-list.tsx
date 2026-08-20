@@ -10,14 +10,14 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuthStore } from '@/store/auth';
-import { useDepartments, useStudents } from '@/lib/queries';
+import { useDepartments, useUsers } from '@/lib/queries';
 import { GlassCard } from '@/components/ui';
 import { useThemeColors, spacing, typography } from '@/theme';
 
 type Department = { id: string; name: string; college_id: string };
-type Student = { id: string; name: string; reg_no: string; department_name?: string };
+type User = { id: string; email: string; name: string | null; role: string; department_id: string | null };
 
-export default function StudentListScreen() {
+export default function TeacherListScreen() {
   const router = useRouter();
   const { user } = useAuthStore();
   const colors = useThemeColors();
@@ -26,19 +26,19 @@ export default function StudentListScreen() {
   const collegeId = user?.college_id ?? null;
   const isSuperAdmin = user?.role === 'SUPER_ADMIN';
   const isDeptAdmin = user?.role === 'DEPARTMENT_ADMIN';
-  const isPlatformAdmin = user?.role === 'PLATFORM_ADMIN';
 
   const { data: allDepartments = [], isLoading: deptLoading } = useDepartments(collegeId);
   const departments = isDeptAdmin && user?.department_id
     ? (allDepartments as Department[]).filter((d) => d.id === user.department_id)
     : (allDepartments as Department[]);
-  const { data: students = [], isLoading: studentsLoading } = useStudents(
+  const { data: users = [], isLoading: usersLoading } = useUsers(
     collegeId,
     selectedDeptId,
     !!selectedDeptId
   );
+  const teachers = (users as User[]).filter((u) => String(u.role).toUpperCase() === 'TEACHER');
 
-  const canManage = isDeptAdmin || isSuperAdmin || isPlatformAdmin;
+  const canView = isDeptAdmin || isSuperAdmin;
 
   useEffect(() => {
     if (isDeptAdmin && user?.department_id && departments.length === 1 && !selectedDeptId) {
@@ -46,22 +46,22 @@ export default function StudentListScreen() {
     }
   }, [isDeptAdmin, user?.department_id, departments, selectedDeptId]);
 
-  if (!canManage) {
+  if (!canView) {
     return (
       <View style={[styles.container, { backgroundColor: colors.background }]}>
         <GlassCard>
           <Text style={[styles.restrictedText, { color: colors.textSecondary }]}>
-            Only admins can view the student list.
+            Only department admins can view the teacher list.
           </Text>
         </GlassCard>
       </View>
     );
   }
 
-  const selectedDept = (departments as Department[]).find(d => d.id === selectedDeptId);
+  const selectedDept = (departments as Department[]).find((d) => d.id === selectedDeptId);
 
   const handleBack = () => {
-    if (selectedDeptId) {
+    if (selectedDeptId && (departments as Department[]).length > 1) {
       setSelectedDeptId(null);
     } else {
       router.back();
@@ -70,7 +70,7 @@ export default function StudentListScreen() {
 
   if (deptLoading) {
     return (
-      <View style={styles.loadingContainer}>
+      <View style={[styles.loadingContainer, { backgroundColor: colors.background }]}>
         <ActivityIndicator size="large" color={colors.primary} />
       </View>
     );
@@ -93,7 +93,7 @@ export default function StudentListScreen() {
         <>
           <Text style={[styles.title, { color: colors.textPrimary }]}>Departments</Text>
           <Text style={[styles.subtitle, { color: colors.textMuted }]}>
-            Select a department to view students
+            Select a department to view teachers
           </Text>
 
           {(departments as Department[]).length === 0 ? (
@@ -129,44 +129,40 @@ export default function StudentListScreen() {
         <>
           <Text style={[styles.title, { color: colors.textPrimary }]}>{selectedDept?.name}</Text>
           <Text style={[styles.subtitle, { color: colors.textMuted }]}>
-            {studentsLoading ? 'Loading...' : `${students.length} student(s)`}
+            {usersLoading ? 'Loading...' : `${teachers.length} teacher(s)`}
           </Text>
 
-          {studentsLoading ? (
+          {usersLoading ? (
             <ActivityIndicator size="large" color={colors.primary} style={styles.loader} />
-          ) : (students as Student[]).length === 0 ? (
+          ) : teachers.length === 0 ? (
             <GlassCard>
               <Text style={[styles.emptyText, { color: colors.textMuted }]}>
-                No students enrolled in this department.
+                No teachers in this department.
               </Text>
             </GlassCard>
           ) : (
             <GlassCard style={styles.listCard} variant="solid">
-              {(students as Student[]).map((student, idx) => (
-                <TouchableOpacity
-                  key={student.id}
+              {teachers.map((teacher, idx) => (
+                <View
+                  key={teacher.id}
                   style={[
-                    styles.studentItem,
+                    styles.teacherItem,
                     { borderBottomColor: colors.border },
-                    idx === (students as Student[]).length - 1 && styles.lastItem,
+                    idx === teachers.length - 1 && styles.lastItem,
                   ]}
-                  onPress={() =>
-                    router.push({
-                      pathname: '/(tabs)/edit-student',
-                      params: { studentId: student.id },
-                    })
-                  }
-                  activeOpacity={0.7}
                 >
-                  <View style={[styles.serialNumber, { backgroundColor: colors.card }]}>
-                    <Text style={[styles.serialText, { color: colors.textMuted }]}>{idx + 1}</Text>
+                  <View style={[styles.teacherIcon, { backgroundColor: `${colors.info}15` }]}>
+                    <Ionicons name="person" size={20} color={colors.info} />
                   </View>
-                  <View style={styles.studentInfo}>
-                    <Text style={[styles.studentName, { color: colors.textPrimary }]}>{student.name}</Text>
-                    <Text style={[styles.studentReg, { color: colors.textMuted }]}>{student.reg_no}</Text>
+                  <View style={styles.teacherInfo}>
+                    <Text style={[styles.teacherName, { color: colors.textPrimary }]}>
+                      {teacher.name || '—'}
+                    </Text>
+                    <Text style={[styles.teacherEmail, { color: colors.textMuted }]} numberOfLines={1}>
+                      {teacher.email}
+                    </Text>
                   </View>
-                  <Ionicons name="chevron-forward" size={18} color={colors.textMuted} />
-                </TouchableOpacity>
+                </View>
               ))}
             </GlassCard>
           )}
@@ -245,32 +241,28 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     flex: 1,
   },
-  studentItem: {
+  teacherItem: {
     flexDirection: 'row',
     alignItems: 'center',
     padding: spacing.lg,
     borderBottomWidth: 1,
     gap: spacing.md,
   },
-  serialNumber: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
+  teacherIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
     justifyContent: 'center',
     alignItems: 'center',
   },
-  serialText: {
-    ...typography.caption,
-    fontWeight: '600',
-  },
-  studentInfo: {
+  teacherInfo: {
     flex: 1,
   },
-  studentName: {
+  teacherName: {
     ...typography.body,
     fontWeight: '500',
   },
-  studentReg: {
+  teacherEmail: {
     ...typography.caption,
     marginTop: 2,
   },
