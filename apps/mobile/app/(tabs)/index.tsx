@@ -75,7 +75,17 @@ export default function DashboardScreen() {
     },
   ];
 
+  const canViewDepartmentHub = isSuperAdmin || isDeptAdmin;
   const adminActions: QuickAction[] = [];
+  if (canViewDepartmentHub) {
+    adminActions.push({
+      icon: 'business',
+      title: 'My department',
+      subtitle: 'Roster, sections & teachers',
+      route: '/(tabs)/department-hub',
+      variant: 'info',
+    });
+  }
   if (isSuperAdmin) {
     adminActions.push({
       icon: 'shield-checkmark',
@@ -84,24 +94,6 @@ export default function DashboardScreen() {
       route: '/(tabs)/create-department-admin',
       variant: 'success',
     });
-  }
-  if (isDeptAdmin) {
-    adminActions.push(
-      {
-        icon: 'school',
-        title: 'Add Teacher',
-        subtitle: 'Create teacher account',
-        route: '/(tabs)/create-teacher',
-        variant: 'info',
-      },
-      {
-        icon: 'grid-outline',
-        title: 'Manage Sections',
-        subtitle: 'Create sections & assign teachers',
-        route: '/(tabs)/manage-sections',
-        variant: 'info',
-      }
-    );
   }
   if (isTeacher) {
     adminActions.push({

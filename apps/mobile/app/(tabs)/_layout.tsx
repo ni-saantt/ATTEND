@@ -101,6 +101,11 @@ export default function TabLayout() {
         <Tabs.Screen name="attendance-record-detail" options={{ href: null }} />
         <Tabs.Screen name="manage-sections" options={{ href: null }} />
         <Tabs.Screen name="section-students" options={{ href: null }} />
+        <Tabs.Screen name="teacher-list" options={{ href: null }} />
+        <Tabs.Screen name="department-hub" options={{ href: null }} />
+        <Tabs.Screen name="manage-sections-detail" options={{ href: null }} />
+        <Tabs.Screen name="section-students-detail" options={{ href: null }} />
+        <Tabs.Screen name="section-students-list" options={{ href: null }} />
       </Tabs>
     </View>
   );
