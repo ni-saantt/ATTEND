@@ -1,0 +1,948 @@
+% Attend — Manual Test Plan & Execution Workbook
+% Single-file LaTeX source. Build: pdflatex main.tex (run twice for TOC)
+\documentclass[11pt,a4paper,oneside]{article}
+
+% ── Packages ────────────────────────────────────────────────────────────────
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage[margin=0.85in, headheight=14pt]{geometry}
+\usepackage{xcolor}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{enumitem}
+\usepackage{hyperref}
+\usepackage{fancyhdr}
+\usepackage{titlesec}
+\usepackage{microtype}
+
+% ── Colors & hyperref ───────────────────────────────────────────────────────
+\definecolor{AttendPrimary}{HTML}{1E3A5F}
+\definecolor{AttendAccent}{HTML}{2563EB}
+\definecolor{AttendGray}{HTML}{64748B}
+\definecolor{AttendLight}{HTML}{EFF6FF}
+
+\hypersetup{
+  colorlinks=true,
+  linkcolor=AttendPrimary,
+  urlcolor=AttendAccent,
+  pdftitle={Attend Manual Test Plan},
+  pdfauthor={Attend Engineering Team}
+}
+
+% ── Section formatting ─────────────────────────────────────────────────────
+\titleformat{\section}{\normalfont\Large\bfseries\color{AttendPrimary}}{\thesection}{0.75em}{}
+\titleformat{\subsection}{\normalfont\large\bfseries\color{AttendPrimary}}{\thesubsection}{0.6em}{}
+
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small\textcolor{AttendGray}{Attend — Manual Test Plan}}
+\fancyhead[R]{\small\textcolor{AttendGray}{v1.0}}
+\fancyfoot[C]{\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+
+% ── Reusable macros ─────────────────────────────────────────────────────────
+\newcommand{\chk}{\fbox{\rule{0pt}{1.05ex}\rule{1.05ex}{0pt}}}
+\newcommand{\fillin}[1][3.5cm]{\rule{#1}{0.4pt}}
+\newcommand{\fillinlong}{\rule{0.72\textwidth}{0.4pt}}
+\newcommand{\notesblock}{\par\smallskip\noindent\textbf{Notes:}\ \fillinlong\par\smallskip}
+\newcommand{\fieldline}[1]{\par\smallskip\noindent\textbf{#1}\ \fillin\par}
+
+\newcolumntype{Y}[1]{>{\raggedright\arraybackslash}p{#1}}
+\newcolumntype{Z}[1]{>{\centering\arraybackslash}p{#1}}
+
+% Two-column field / value table (full width)
+\newenvironment{fieldtable}{%
+  \smallskip\small
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{0.34\linewidth} >{\raggedright\arraybackslash}p{0.60\linewidth}@{}}
+  \toprule
+  \textbf{Field} & \textbf{Value} \\
+  \midrule
+}{%
+  \bottomrule
+  \end{tabular}
+  \smallskip
+}
+
+% Test-case tables (4 columns: ID, case, expected, pass)
+\newcommand{\tcheadfour}{%
+  \toprule
+  \textbf{ID} & \textbf{Test case} & \textbf{Expected} & \textbf{Pass} \\
+  \midrule
+}
+
+% Test-case tables (5 columns: ID, case, steps, expected, pass)
+\newcommand{\tcheadfive}{%
+  \toprule
+  \textbf{ID} & \textbf{Test case} & \textbf{Steps} & \textbf{Expected} & \textbf{Pass} \\
+  \midrule
+}
+
+% Test-case tables (6 columns: ID, role, action, route, pass)
+\newcommand{\tcheadsix}{%
+  \toprule
+  \textbf{ID} & \textbf{Role} & \textbf{Quick action} & \textbf{Route} & \textbf{Works} & \textbf{Pass} \\
+  \midrule
+}
+
+\begin{document}
+
+% ═══════════════════════════════════════════════════════════════════════════
+% TITLE
+% ═══════════════════════════════════════════════════════════════════════════
+\begin{titlepage}
+  \centering
+  \vspace*{1.5cm}
+  {\Huge\bfseries\color{AttendPrimary} Attend\par}
+  \vspace{0.4cm}
+  {\LARGE Manual Test Plan \& Execution Workbook\par}
+  \vspace{1.2cm}
+  {\large\color{AttendGray}
+    End-to-end manual testing across Platform Admin, Super Admin,\\
+    Department Admin, and Teacher roles\\
+    (Mobile + Desktop + Backend)\par}
+  \vfill
+\begin{tabular}{@{}ll@{}}
+    \textbf{Document version} & 1.0 \\
+    \textbf{Product version}  & Attend v1.0.0 \\
+    \textbf{Date}             & August 2026 \\
+  \end{tabular}
+  \vspace{1.5cm}
+\end{titlepage}
+
+\pagenumbering{roman}
+\tableofcontents
+\clearpage
+\pagenumbering{arabic}
+
+\noindent
+\textbf{How to use:} Fill in the session header, work through each section, mark \chk\ when verified, and record actual values in the blank fields.
+
+% ═══════════════════════════════════════════════════════════════════════════
+\section{Test Session Header}
+% ═══════════════════════════════════════════════════════════════════════════
+
+\begin{fieldtable}
+\textbf{Test run ID}         & TR-\rule{4cm}{0.4pt} \\
+\textbf{Tester name}        & \\
+\textbf{Date}               & \\
+\textbf{Start time}         & \\
+\textbf{End time}           & \\
+\textbf{Git commit / branch}& \\
+\textbf{Backend URL}        & e.g.\ \texttt{http://10.x.x.x:8000} \\
+\textbf{Mobile device}      & e.g.\ iPhone / Android + OS version \\
+\textbf{Desktop OS}         & e.g.\ macOS / Windows \\
+\textbf{Network}            & Same WiFi? Y / N \\
+\textbf{Supabase project}   & \\
+\textbf{Overall result}     & Pass / Fail / Partial \\
+\end{fieldtable}
+
+% ═══════════════════════════════════════════════════════════════════════════
+\section{Environment \& Preflight}
+% ═══════════════════════════════════════════════════════════════════════════
+
+\subsection{Services running}
+
+\begin{itemize}[leftmargin=2em, itemsep=0.25em]
+  \item[\chk] \texttt{npm run dev} starts without errors (Turbo TUI)
+  \item[\chk] Backend health: \texttt{GET /health} returns \texttt{\{status: ok\}}
+  \item[\chk] Backend docs load: \texttt{/docs}
+  \item[\chk] Mobile Expo bundle loads (Android/iOS)
+  \item[\chk] Admin desktop Electron window opens
+  \item[\chk] Shared package \texttt{tsc --watch} running (no errors)
+\end{itemize}
+
+\small
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{0.27\linewidth} >{\raggedright\arraybackslash}p{0.38\linewidth} >{\raggedright\arraybackslash}p{0.25\linewidth} c@{}}
+  \toprule
+  \textbf{Check} & \textbf{Expected} & \textbf{Actual} & \textbf{Pass} \\
+  \midrule
+  Backend port & \texttt{0.0.0.0:8000} & & \chk \\
+  API\_BASE on mobile (login $\rightarrow$ Test connection) & Reachable & & \chk \\
+  Desktop \texttt{VITE\_API\_URL} & Points to backend & & \chk \\
+  \bottomrule
+\end{tabular}
+\normalsize
+
+\notesblock
+
+\subsection{Test accounts (fill before testing)}
+
+\small
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{0.09\linewidth} >{\raggedright\arraybackslash}p{0.12\linewidth} >{\raggedright\arraybackslash}p{0.18\linewidth} >{\raggedright\arraybackslash}p{0.22\linewidth} >{\raggedright\arraybackslash}p{0.18\linewidth} >{\centering\arraybackslash}p{0.06\linewidth}@{}}
+  \toprule
+  \textbf{Email} & \textbf{Password} & \textbf{Role} & \textbf{College} & \textbf{Department} & \textbf{Notes} \\
+  \midrule
+  & & PLATFORM\_ADMIN     & & & \\
+  & & SUPER\_ADMIN        & & & \\
+  & & DEPARTMENT\_ADMIN   & & & \\
+  & & TEACHER             & & & \\
+  \bottomrule
+\end{tabular}
+\normalsize
+
+\subsection{Seed test data (fill as created)}
+
+\small
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{0.30\linewidth} >{\raggedright\arraybackslash}p{0.34\linewidth} >{\raggedright\arraybackslash}p{0.30\linewidth}@{}}
+  \toprule
+  \textbf{Entity} & \textbf{Name / ID} & \textbf{Notes} \\
+  \midrule
+  College                      & & \\
+  Department                   & & \\
+  Subject 1                    & & \\
+  Subject 2                    & & \\
+  Section A (Subject 1)        & & \\
+  Section B (Subject 1)        & & \\
+  Teacher (assigned Section A) & & \\
+  Student S1 (Section A)       & reg\_no: & \\
+  Student S2 (Section A)       & reg\_no: & \\
+  Student S3 (Section B)       & reg\_no: & \\
+  \bottomrule
+\end{tabular}
+\normalsize
+
+% ═══════════════════════════════════════════════════════════════════════════
+\section{Authentication \& Connection}
+% ═══════════════════════════════════════════════════════════════════════════
+
+\subsection{Mobile — Login screen}
+
+\small
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{0.11\linewidth} >{\raggedright\arraybackslash}p{0.16\linewidth} >{\raggedright\arraybackslash}p{0.20\linewidth} >{\raggedright\arraybackslash}p{0.43\linewidth} >{\centering\arraybackslash}p{0.06\linewidth}@{}}
+  \tcheadfive
+  AUTH-M-01 & Test connection      & Tap \textbf{Test connection}                          & Alert: Connection OK, \texttt{/health} response              & \chk \\
+  AUTH-M-02 & Valid login            & Enter valid credentials $\rightarrow$ Login             & Redirect to Dashboard / profile-edit if incomplete           & \chk \\
+  AUTH-M-03 & Invalid password       & Wrong password                                        & Error: Login Failed                                            & \chk \\
+  AUTH-M-04 & Invalid email format   & Bad email                                             & Validation error                                               & \chk \\
+  AUTH-M-05 & Unverified email       & Login before verify                                   & Redirect to verify-email                                       & \chk \\
+  AUTH-M-06 & Logout                 & Profile $\rightarrow$ sign out or token clear         & Returns to login                                               & \chk \\
+  \bottomrule
+\end{tabular}
+\normalsize
+
+\fieldline{Actual API\_BASE used:}
+\fieldline{Login response time (ms):}
+\notesblock
+
+\subsection{Mobile — Sign up \& verify}
+
+\small
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{0.13\linewidth} >{\raggedright\arraybackslash}p{0.24\linewidth} >{\raggedright\arraybackslash}p{0.51\linewidth} >{\centering\arraybackslash}p{0.06\linewidth}@{}}
+  \tcheadfour
+  AUTH-M-07 & Sign up new user     & Account created, verify prompt     & \chk \\
+  AUTH-M-08 & Verify email link    & Email link opens, account verified & \chk \\
+  AUTH-M-09 & Resend verification  & Resend succeeds                    & \chk \\
+  \bottomrule
+\end{tabular}
+\normalsize
+
+\fieldline{Test email used:}
+\notesblock
+
+\subsection{Desktop — Login}
+
+\small
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{0.13\linewidth} >{\raggedright\arraybackslash}p{0.24\linewidth} >{\raggedright\arraybackslash}p{0.51\linewidth} >{\centering\arraybackslash}p{0.06\linewidth}@{}}
+  \tcheadfour
+  AUTH-D-01 & Platform admin login       & Dashboard loads                              & \chk \\
+  AUTH-D-02 & Invalid credentials        & Error shown                                  & \chk \\
+  AUTH-D-03 & Sign out                   & Returns to login, protected routes blocked   & \chk \\
+  AUTH-D-04 & Unauthenticated access & Navigate to \texttt{/colleges} without token; Redirect to login & \chk \\
+  \bottomrule
+\end{tabular}
+\normalsize
+
+\notesblock
+
+% ═══════════════════════════════════════════════════════════════════════════
+\section{Desktop App — Platform Admin}
+% ═══════════════════════════════════════════════════════════════════════════
+
+\subsection{Dashboard}
+
+\begin{itemize}[leftmargin=2em, itemsep=0.25em]
+  \item[\chk] Dashboard loads after login
+  \item[\chk] Navigation sidebar visible (Dashboard, Colleges)
+  \item[\chk] Sign Out works
+\end{itemize}
+
+\notesblock
+
+\subsection{Colleges}
+
+\small
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{0.11\linewidth} >{\raggedright\arraybackslash}p{0.16\linewidth} >{\raggedright\arraybackslash}p{0.20\linewidth} >{\raggedright\arraybackslash}p{0.43\linewidth} >{\centering\arraybackslash}p{0.06\linewidth}@{}}
+  \tcheadfive
+  DESK-01 & List colleges        & Colleges page                    & All colleges listed              & \chk \\
+  DESK-02 & Create college       & Create College $\rightarrow$ submit name & College appears in list  & \chk \\
+  DESK-03 & Edit college         & Edit name / details              & Changes saved                    & \chk \\
+  DESK-04 & Upload college logo  & Upload logo (if UI present)      & Logo URL stored, displays        & \chk \\
+  DESK-05 & View college detail  & Open college                     & Detail page loads                & \chk \\
+  \bottomrule
+\end{tabular}
+\normalsize
+
+\fieldline{College created name:}
+\fieldline{College ID:}
+\notesblock
+
+\subsection{Super Admin creation (per college)}
+
+\small
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{0.13\linewidth} >{\raggedright\arraybackslash}p{0.24\linewidth} >{\raggedright\arraybackslash}p{0.51\linewidth} >{\centering\arraybackslash}p{0.06\linewidth}@{}}
+  \tcheadfour
+  DESK-06 & Create super admin              & User created with SUPER\_ADMIN role      & \chk \\
+  DESK-07 & Super admin can login mobile    & New super admin logs in on mobile        & \chk \\
+  \bottomrule
+\end{tabular}
+\normalsize
+
+\fieldline{Super admin email created:}
+\notesblock
+
+\subsection{Departments (per college)}
+
+\small
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{0.13\linewidth} >{\raggedright\arraybackslash}p{0.24\linewidth} >{\raggedright\arraybackslash}p{0.51\linewidth} >{\centering\arraybackslash}p{0.06\linewidth}@{}}
+  \tcheadfour
+  DESK-08 & List departments    & Departments for college shown & \chk \\
+  DESK-09 & Create department   & New department saved          & \chk \\
+  DESK-10 & Delete department   & Department removed (if allowed) & \chk \\
+  \bottomrule
+\end{tabular}
+\normalsize
+
+\fieldline{Department name:}
+\fieldline{Department ID:}
+\notesblock
+
+\subsection{Users (per college)}
+
+\small
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{0.13\linewidth} >{\raggedright\arraybackslash}p{0.24\linewidth} >{\raggedright\arraybackslash}p{0.51\linewidth} >{\centering\arraybackslash}p{0.06\linewidth}@{}}
+  \tcheadfour
+  DESK-11 & List users              & Users filtered by college           & \chk \\
+  DESK-12 & Create user (dept admin)& User with DEPARTMENT\_ADMIN role    & \chk \\
+  DESK-13 & Create user (teacher)   & User with TEACHER role              & \chk \\
+  DESK-14 & Delete user             & User removed                        & \chk \\
+  \bottomrule
+\end{tabular}
+\normalsize
+
+\notesblock
+
+\subsection{Subjects (per department)}
+
+\small
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{0.13\linewidth} >{\raggedright\arraybackslash}p{0.24\linewidth} >{\raggedright\arraybackslash}p{0.51\linewidth} >{\centering\arraybackslash}p{0.06\linewidth}@{}}
+  \tcheadfour
+  DESK-15 & List subjects              & Subjects for department shown        & \chk \\
+  DESK-16 & Create subject             & Subject saved                        & \chk \\
+  DESK-17 & Edit subject               & Name updated                         & \chk \\
+  DESK-18 & Delete subject             & Subject removed                      & \chk \\
+  DESK-19 & Enroll students to subject & Students linked via subject\_students & \chk \\
+  \bottomrule
+\end{tabular}
+\normalsize
+
+\fieldline{Subject 1 name:}
+\fieldline{Subject 2 name:}
+\notesblock
+
+\subsection{Students view (desktop)}
+
+\small
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{0.13\linewidth} >{\raggedright\arraybackslash}p{0.24\linewidth} >{\raggedright\arraybackslash}p{0.51\linewidth} >{\centering\arraybackslash}p{0.06\linewidth}@{}}
+  \tcheadfour
+  DESK-20 & List students   & Students by college/dept visible     & \chk \\
+  DESK-21 & Student detail  & reg\_no, name, image URLs shown      & \chk \\
+  \bottomrule
+\end{tabular}
+\normalsize
+
+\notesblock
+
+% ═══════════════════════════════════════════════════════════════════════════
+\section{Mobile — Dashboard \& Profile}
+% ═══════════════════════════════════════════════════════════════════════════
+
+\subsection{Dashboard (all staff roles)}
+
+\small
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{0.09\linewidth} >{\raggedright\arraybackslash}p{0.12\linewidth} >{\raggedright\arraybackslash}p{0.18\linewidth} >{\raggedright\arraybackslash}p{0.22\linewidth} >{\raggedright\arraybackslash}p{0.18\linewidth} >{\centering\arraybackslash}p{0.06\linewidth}@{}}
+  \tcheadsix
+  DASH-01 & All         & Take Attendance              & attendance              & & \chk \\
+  DASH-02 & All         & Enroll Student               & enroll                  & & \chk \\
+  DASH-03 & All         & View Reports                 & reports                 & & \chk \\
+  DASH-04 & Super/Dept  & My department (Dept Hub)     & department-hub          & & \chk \\
+  DASH-05 & Super only  & Create Department Admin      & create-department-admin & & \chk \\
+  DASH-06 & Teacher     & Section Students             & section-students        & & \chk \\
+  \bottomrule
+\end{tabular}
+\normalsize
+
+\notesblock
+
+\subsection{Profile}
+
+\small
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{0.13\linewidth} >{\raggedright\arraybackslash}p{0.24\linewidth} >{\raggedright\arraybackslash}p{0.51\linewidth} >{\centering\arraybackslash}p{0.06\linewidth}@{}}
+  \tcheadfour
+  PROF-01 & Profile screen loads       & Name, email, role displayed                    & \chk \\
+  PROF-02 & Profile card               & Full profile view                              & \chk \\
+  PROF-03 & Profile edit — name        & Name saved via API                             & \chk \\
+  PROF-04 & Profile edit — contact     & Contact number saved                           & \chk \\
+  PROF-05 & Incomplete profile redirect& Missing name/contact $\rightarrow$ profile-edit on login & \chk \\
+  \bottomrule
+\end{tabular}
+\normalsize
+
+\fieldline{Updated name:}
+\fieldline{Updated contact:}
+\notesblock
+
+% ═══════════════════════════════════════════════════════════════════════════
+\section{Mobile — User Management}
+% ═══════════════════════════════════════════════════════════════════════════
+
+\subsection{Super Admin — Create Department Admin}
+
+\small
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{0.13\linewidth} >{\raggedright\arraybackslash}p{0.24\linewidth} >{\raggedright\arraybackslash}p{0.51\linewidth} >{\centering\arraybackslash}p{0.06\linewidth}@{}}
+  \tcheadfour
+  USER-01 & Open Create Dept Admin   & Form loads              & \chk \\
+  USER-02 & Create with valid data   & User created, can login & \chk \\
+  USER-03 & Duplicate email          & Error returned          & \chk \\
+  USER-04 & Missing required fields  & Validation error        & \chk \\
+  \bottomrule
+\end{tabular}
+\normalsize
+
+\fieldline{Created dept admin email:}
+\notesblock
+
+\subsection{Department Admin — Create Teacher}
+
+\small
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{0.13\linewidth} >{\raggedright\arraybackslash}p{0.24\linewidth} >{\raggedright\arraybackslash}p{0.51\linewidth} >{\centering\arraybackslash}p{0.06\linewidth}@{}}
+  \tcheadfour
+  USER-05 & Open Add Teacher  & Form loads                    & \chk \\
+  USER-06 & Create teacher    & TEACHER role user created     & \chk \\
+  USER-07 & Teacher login     & New teacher can login mobile  & \chk \\
+  \bottomrule
+\end{tabular}
+\normalsize
+
+\fieldline{Created teacher email:}
+\notesblock
+
+\subsection{Department Hub navigation}
+
+\small
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{0.13\linewidth} >{\raggedright\arraybackslash}p{0.24\linewidth} >{\raggedright\arraybackslash}p{0.51\linewidth} >{\centering\arraybackslash}p{0.06\linewidth}@{}}
+  \toprule
+  \textbf{ID} & \textbf{Link} & \textbf{Route} & \textbf{Pass} \\
+  \midrule
+  HUB-01 & View Students    & student-list       & \chk \\
+  HUB-02 & View Teachers    & teacher-list       & \chk \\
+  HUB-03 & Section Students & section-students   & \chk \\
+  HUB-04 & Manage Sections  & manage-sections    & \chk \\
+  HUB-05 & Add Teacher      & create-teacher     & \chk \\
+  \bottomrule
+\end{tabular}
+\normalsize
+
+\notesblock
+
+\subsection{Student list \& teacher list}
+
+\small
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{0.13\linewidth} >{\raggedright\arraybackslash}p{0.24\linewidth} >{\raggedright\arraybackslash}p{0.51\linewidth} >{\centering\arraybackslash}p{0.06\linewidth}@{}}
+  \tcheadfour
+  LIST-01 & Student list shows dept students & Names, reg\_no visible   & \chk \\
+  LIST-02 & Tap student $\rightarrow$ edit   & edit-student screen      & \chk \\
+  LIST-03 & Teacher list shows dept teachers & Names, emails visible    & \chk \\
+  \bottomrule
+\end{tabular}
+\normalsize
+
+\notesblock
+
+% ═══════════════════════════════════════════════════════════════════════════
+\section{Section Management}
+% ═══════════════════════════════════════════════════════════════════════════
+
+\subsection{Department Admin — Create \& manage sections}
+
+\small
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{0.11\linewidth} >{\raggedright\arraybackslash}p{0.16\linewidth} >{\raggedright\arraybackslash}p{0.20\linewidth} >{\raggedright\arraybackslash}p{0.43\linewidth} >{\centering\arraybackslash}p{0.06\linewidth}@{}}
+  \tcheadfive
+  SEC-01 & Open Manage Sections       & Select subject                    & Section list for subject           & \chk \\
+  SEC-02 & Create Section A             & Name \texttt{A}                   & Section created (uppercase)        & \chk \\
+  SEC-03 & Create Section B             & Name \texttt{B}                   & Second section created             & \chk \\
+  SEC-04 & Duplicate section name       & Create \texttt{A} again           & Error: name exists                 & \chk \\
+  SEC-05 & Assign teacher to Section A  & Checkbox modal $\rightarrow$ Save & Teacher listed on section          & \chk \\
+  SEC-06 & Assign multiple teachers     & Two teachers on one section       & Both shown                         & \chk \\
+  SEC-07 & Remove teacher from section  & Delete assignment                 & Teacher removed                    & \chk \\
+  SEC-08 & Delete section               & Confirm delete                    & Section removed                    & \chk \\
+  \bottomrule
+\end{tabular}
+\normalsize
+
+\fieldline{Section A ID:}
+\fieldline{Section B ID:}
+\fieldline{Teacher assigned:}
+\notesblock
+
+\subsection{Teacher / Admin — Section student roster}
+
+\small
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{0.13\linewidth} >{\raggedright\arraybackslash}p{0.24\linewidth} >{\raggedright\arraybackslash}p{0.51\linewidth} >{\centering\arraybackslash}p{0.06\linewidth}@{}}
+  \tcheadfour
+  SEC-09 & My Sections lists assigned subjects & Only assigned sections visible (teacher) & \chk \\
+  SEC-10 & Open section student list           & section-students-list loads              & \chk \\
+  SEC-11 & Edit mode $\rightarrow$ Add students& Multi-select $\rightarrow$ Add; students in roster & \chk \\
+  SEC-12 & Add student already in Section B    & Blocked — one section per subject        & \chk \\
+  SEC-13 & Remove student from section         & Edit $\rightarrow$ remove                & \chk \\
+  SEC-14 & Teacher not assigned to section     & 403 or UI blocked                        & \chk \\
+  \bottomrule
+\end{tabular}
+\normalsize
+
+\fieldline{Students added to Section A:}
+\fieldline{Conflict test student:}
+\fieldline{Error message received:}
+\notesblock
+
+% ═══════════════════════════════════════════════════════════════════════════
+\section{Student Enrollment}
+% ═══════════════════════════════════════════════════════════════════════════
+
+\subsection{Enroll new student (3 face poses)}
+
+\small
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{0.13\linewidth} >{\raggedright\arraybackslash}p{0.24\linewidth} >{\raggedright\arraybackslash}p{0.51\linewidth} >{\centering\arraybackslash}p{0.06\linewidth}@{}}
+  \tcheadfour
+  ENR-01 & Step 1 — enter reg\_no, name & Validation passes                    & \chk \\
+  ENR-02 & Select college (super admin) & College picker works                 & \chk \\
+  ENR-03 & Select department            & Department picker works              & \chk \\
+  ENR-04 & Proceed to camera            & enroll-camera opens                  & \chk \\
+  ENR-05 & Capture front face           & Face detected                        & \chk \\
+  ENR-06 & Capture left face            & Face detected                        & \chk \\
+  ENR-07 & Capture right face           & Face detected                        & \chk \\
+  ENR-08 & Submit enrollment            & Student created in DB                & \chk \\
+  ENR-09 & Embeddings stored            & 3 embeddings (front/left/right)      & \chk \\
+  ENR-10 & Images in storage            & primary-faces bucket paths           & \chk \\
+  ENR-11 & FAISS cache invalidated      & Recognition works immediately        & \chk \\
+  \bottomrule
+\end{tabular}
+\normalsize
+
+\fieldline{Student reg\_no:}
+\fieldline{Student name:}
+\fieldline{Student ID:}
+\fieldline{Enrollment time (sec):}
+\notesblock
+
+\subsection{Enrollment — negative cases}
+
+\small
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{0.13\linewidth} >{\raggedright\arraybackslash}p{0.24\linewidth} >{\raggedright\arraybackslash}p{0.51\linewidth} >{\centering\arraybackslash}p{0.06\linewidth}@{}}
+  \tcheadfour
+  ENR-12 & No face in front image  & Error: no face detected  & \chk \\
+  ENR-13 & Missing left/right pose & Error before submit      & \chk \\
+  ENR-14 & Duplicate reg\_no       & Error from API           & \chk \\
+  \bottomrule
+\end{tabular}
+\normalsize
+
+\notesblock
+
+\subsection{Edit student \& add face}
+
+\small
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{0.13\linewidth} >{\raggedright\arraybackslash}p{0.24\linewidth} >{\raggedright\arraybackslash}p{0.51\linewidth} >{\centering\arraybackslash}p{0.06\linewidth}@{}}
+  \tcheadfour
+  ENR-15 & Edit student name/reg          & Saved                         & \chk \\
+  ENR-16 & Add face camera — update left  & New embedding + image         & \chk \\
+  ENR-17 & Add face camera — update right & New embedding + image         & \chk \\
+  ENR-18 & Delete student (if UI exists)  & Student removed               & \chk \\
+  \bottomrule
+\end{tabular}
+\normalsize
+
+\notesblock
+
+% ═══════════════════════════════════════════════════════════════════════════
+\section{Attendance \& Face Recognition}
+% ═══════════════════════════════════════════════════════════════════════════
+
+\subsection{Attendance setup}
+
+\small
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{0.13\linewidth} >{\raggedright\arraybackslash}p{0.24\linewidth} >{\raggedright\arraybackslash}p{0.51\linewidth} >{\centering\arraybackslash}p{0.06\linewidth}@{}}
+  \tcheadfour
+  ATT-01 & Teacher with no sections       & Empty state message              & \chk \\
+  ATT-02 & Select subject                 & Sections list updates            & \chk \\
+  ATT-03 & Select section                 & Start enabled                    & \chk \\
+  ATT-04 & Super admin test recognition   & test\_mode camera (if visible)   & \chk \\
+  \bottomrule
+\end{tabular}
+\normalsize
+
+\fieldline{Subject selected:}
+\fieldline{Section selected:}
+\notesblock
+
+\subsection{Single-photo attendance}
+
+\small
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{0.13\linewidth} >{\raggedright\arraybackslash}p{0.24\linewidth} >{\raggedright\arraybackslash}p{0.51\linewidth} >{\centering\arraybackslash}p{0.06\linewidth}@{}}
+  \tcheadfour
+  ATT-05 & Capture photo with enrolled student & Match shown with name, reg\_no     & \chk \\
+  ATT-06 & Confidence score displayed          & Score $>$ threshold (record below) & \chk \\
+  ATT-07 & Reference image shown               & primary\_image\_url loads          & \chk \\
+  ATT-08 & Face crop preview                   & Bounding box / crop visible        & \chk \\
+  ATT-09 & Confirm \& save                       & Attendance record created          & \chk \\
+  ATT-10 & Reject / skip unknown               & No record saved for unknown        & \chk \\
+  \bottomrule
+\end{tabular}
+\normalsize
+
+\begin{fieldtable}
+\textbf{Student matched}           & \\
+\textbf{Confidence score}          & \\
+\textbf{Recognition latency (approx)} & \\
+\textbf{attendance\_id (after save)}  & \\
+\textbf{face\_crop\_url}           & \\
+\end{fieldtable}
+
+\notesblock
+
+\subsection{Live stream attendance}
+
+\small
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{0.13\linewidth} >{\raggedright\arraybackslash}p{0.24\linewidth} >{\raggedright\arraybackslash}p{0.51\linewidth} >{\centering\arraybackslash}p{0.06\linewidth}@{}}
+  \tcheadfour
+  ATT-11 & Start live session           & Stream session started           & \chk \\
+  ATT-12 & Frame 1 — student recognized & Match appears                    & \chk \\
+  ATT-13 & Same student in frame 2      & Dedup — not double-counted       & \chk \\
+  ATT-14 & Multiple students in frame   & Multiple matches                 & \chk \\
+  ATT-15 & Confirm batch save           & All accepted records saved       & \chk \\
+  ATT-16 & End stream session           & Session cleared                  & \chk \\
+  \bottomrule
+\end{tabular}
+\normalsize
+
+\fieldline{Session ID:}
+\fieldline{Students marked present:}
+\notesblock
+
+\subsection{Recognition edge cases}
+
+\small
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{0.13\linewidth} >{\raggedright\arraybackslash}p{0.24\linewidth} >{\raggedright\arraybackslash}p{0.51\linewidth} >{\centering\arraybackslash}p{0.06\linewidth}@{}}
+  \tcheadfour
+  ATT-17 & Unknown person (not enrolled)           & Shown as unknown                              & \chk \\
+  ATT-18 & Enrolled student NOT in section roster  & Treated as unknown                            & \chk \\
+  ATT-19 & Student in college, wrong section       & No match / unknown for section scope          & \chk \\
+  ATT-20 & Poor lighting / angle                   & Degraded or no match (record behavior)        & \chk \\
+  ATT-21 & No face in frame                        & No matches or empty results                   & \chk \\
+  ATT-22 & Super admin test mode                   & Matches across college (no subject filter)    & \chk \\
+  \bottomrule
+\end{tabular}
+\normalsize
+
+\smallskip
+\small
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{0.13\linewidth} >{\raggedright\arraybackslash}p{0.24\linewidth} >{\raggedright\arraybackslash}p{0.51\linewidth} >{\centering\arraybackslash}p{0.06\linewidth}@{}}
+  \toprule
+  \textbf{Edge case} & \textbf{Expected behavior} & \textbf{Actual behavior} & \textbf{Pass} \\
+  \midrule
+  Unknown face           & unknown: true                  & & \chk \\
+  Out-of-section enrolled& unknown / filtered             & & \chk \\
+  Low confidence         & Below threshold $\rightarrow$ unknown & & \chk \\
+  \bottomrule
+\end{tabular}
+\normalsize
+
+\notesblock
+
+\subsection{Attendance record verification (backend / reports)}
+
+\small
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{0.13\linewidth} >{\raggedright\arraybackslash}p{0.24\linewidth} >{\raggedright\arraybackslash}p{0.51\linewidth} >{\centering\arraybackslash}p{0.06\linewidth}@{}}
+  \tcheadfour
+  ATT-23 & Record has student\_id   & Correct student           & \chk \\
+  ATT-24 & Record has subject\_id   & Correct subject           & \chk \\
+  ATT-25 & Record has section\_id   & Correct section           & \chk \\
+  ATT-26 & Record has attendance\_date & Today's date           & \chk \\
+  ATT-27 & Record has confidence    & Matches UI score          & \chk \\
+  ATT-28 & Record has face\_crop\_url & URL accessible          & \chk \\
+  ATT-29 & Delete attendance record & Record removed (if UI)    & \chk \\
+  \bottomrule
+\end{tabular}
+\normalsize
+
+\fieldline{Sample record JSON / ID:}
+\fieldline{}
+
+% ═══════════════════════════════════════════════════════════════════════════
+\section{Reports \& Exports}
+% ═══════════════════════════════════════════════════════════════════════════
+
+\subsection{Reports list}
+
+\small
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{0.13\linewidth} >{\raggedright\arraybackslash}p{0.24\linewidth} >{\raggedright\arraybackslash}p{0.51\linewidth} >{\centering\arraybackslash}p{0.06\linewidth}@{}}
+  \tcheadfour
+  RPT-01 & Empty state (no attendance)  & ``No reports yet'' message       & \chk \\
+  RPT-02 & Subject with attendance      & Listed on reports screen         & \chk \\
+  RPT-03 & Open reports detail          & Records for subject shown        & \chk \\
+  RPT-04 & Filter by section (if UI)    & Section-scoped records           & \chk \\
+  RPT-05 & Attendance record detail     & Single record view               & \chk \\
+  \bottomrule
+\end{tabular}
+\normalsize
+
+\fieldline{Subject tested:}
+\fieldline{Record count shown:}
+\notesblock
+
+\subsection{Export — Excel}
+
+\small
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{0.13\linewidth} >{\raggedright\arraybackslash}p{0.24\linewidth} >{\raggedright\arraybackslash}p{0.51\linewidth} >{\centering\arraybackslash}p{0.06\linewidth}@{}}
+  \tcheadfour
+  RPT-06 & Download Excel report         & File downloads / shares          & \chk \\
+  RPT-07 & Excel contains correct students & Names, dates match UI          & \chk \\
+  RPT-08 & Excel contains confidence     & Column populated                 & \chk \\
+  \bottomrule
+\end{tabular}
+\normalsize
+
+\fieldline{File name:}
+\fieldline{Row count:}
+\notesblock
+
+\subsection{Export — PDF}
+
+\small
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{0.13\linewidth} >{\raggedright\arraybackslash}p{0.24\linewidth} >{\raggedright\arraybackslash}p{0.51\linewidth} >{\centering\arraybackslash}p{0.06\linewidth}@{}}
+  \tcheadfour
+  RPT-09 & Download PDF report  & File downloads / shares  & \chk \\
+  RPT-10 & PDF formatting       & Headers, data correct    & \chk \\
+  \bottomrule
+\end{tabular}
+\normalsize
+
+\fieldline{File name:}
+\notesblock
+
+\subsection{Delete report (subject-level)}
+
+\small
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{0.13\linewidth} >{\raggedright\arraybackslash}p{0.24\linewidth} >{\raggedright\arraybackslash}p{0.51\linewidth} >{\centering\arraybackslash}p{0.06\linewidth}@{}}
+  \tcheadfour
+  RPT-11 & Delete report for subject & Attendance records removed (if implemented) & \chk \\
+  \bottomrule
+\end{tabular}
+\normalsize
+
+\notesblock
+
+% ═══════════════════════════════════════════════════════════════════════════
+\section{Role-Based Access Control (Negative Tests)}
+% ═══════════════════════════════════════════════════════════════════════════
+
+\noindent\textit{Verify forbidden actions return errors or UI is hidden.}
+
+\smallskip
+\small
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{0.11\linewidth} >{\raggedright\arraybackslash}p{0.16\linewidth} >{\raggedright\arraybackslash}p{0.20\linewidth} >{\raggedright\arraybackslash}p{0.43\linewidth} >{\centering\arraybackslash}p{0.06\linewidth}@{}}
+  \toprule
+  \textbf{ID} & \textbf{Role} & \textbf{Action attempted} & \textbf{Expected} & \textbf{Pass} \\
+  \midrule
+  RBAC-01 & Teacher       & Create section                    & Blocked / hidden  & \chk \\
+  RBAC-02 & Teacher       & Assign teachers to section        & Blocked           & \chk \\
+  RBAC-03 & Teacher       & Edit section not assigned         & 403               & \chk \\
+  RBAC-04 & Teacher       & Create dept admin                 & Hidden            & \chk \\
+  RBAC-05 & Dept Admin    & Create college (desktop)          & N/A / blocked     & \chk \\
+  RBAC-06 & Dept Admin    & Manage other department           & 403               & \chk \\
+  RBAC-07 & Super Admin   & Platform-only desktop routes      & As designed       & \chk \\
+  RBAC-08 & Unauthenticated & API call without JWT            & 401               & \chk \\
+  \bottomrule
+\end{tabular}
+\normalsize
+
+\fieldline{API endpoint tested:}
+\fieldline{HTTP status received:}
+\notesblock
+
+% ═══════════════════════════════════════════════════════════════════════════
+\section{Backend API Spot Checks (Optional)}
+% ═══════════════════════════════════════════════════════════════════════════
+
+\noindent\textit{Use \texttt{/docs} or curl/Postman to verify critical endpoints.}
+
+\smallskip
+\footnotesize
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{0.40\linewidth} >{\centering\arraybackslash}p{0.08\linewidth} >{\raggedright\arraybackslash}p{0.14\linewidth} >{\centering\arraybackslash}p{0.08\linewidth} >{\centering\arraybackslash}p{0.06\linewidth}@{}}
+  \toprule
+  \textbf{Endpoint} & \textbf{Method} & \textbf{Role} & \textbf{Status} & \textbf{Pass} \\
+  \midrule
+  \texttt{/health}                              & GET  & ---    & 200 & \chk \\
+  \texttt{/api/v1/auth/login}                   & POST & ---    & 200 & \chk \\
+  \texttt{/api/v1/auth/me}                      & GET  & JWT    & 200 & \chk \\
+  \texttt{/api/v1/my-sections}                 & GET  & Teacher& 200 & \chk \\
+  \texttt{/api/v1/students/enroll}             & POST & Admin  & 200 & \chk \\
+  \texttt{/api/v1/recognize}                  & POST & Teacher& 200 & \chk \\
+  \texttt{/api/v1/attendance}                  & POST & Teacher& 200 & \chk \\
+  \texttt{/api/v1/attendance/report/simple-pdf}& GET  & Teacher& 200 & \chk \\
+  \texttt{/api/v1/subjects/\{id\}/sections}    & POST & Dept Admin & 200 & \chk \\
+  \bottomrule
+\end{tabular}
+\normalsize
+
+\notesblock
+
+% ═══════════════════════════════════════════════════════════════════════════
+\section{Performance \& Recognition Metrics (Optional)}
+% ═══════════════════════════════════════════════════════════════════════════
+
+\small
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{0.13\linewidth} >{\raggedright\arraybackslash}p{0.24\linewidth} >{\raggedright\arraybackslash}p{0.51\linewidth} >{\centering\arraybackslash}p{0.06\linewidth}@{}}
+  \toprule
+  \textbf{Metric} & \textbf{Target} & \textbf{Measured} & \textbf{Pass} \\
+  \midrule
+  Feature extraction latency (CPU) & $\sim$45--80 ms/frame & & \chk \\
+  FAISS match latency              & Sub-ms                & & \chk \\
+  End-to-end photo attendance      & $<$ 5 sec user-perceived & & \chk \\
+  Enrollment (3 poses)             & Reasonable on device  & & \chk \\
+  Report PDF generation            & $<$ 10 sec            & & \chk \\
+  \bottomrule
+\end{tabular}
+\normalsize
+
+\fieldline{Test device:}
+\fieldline{Backend execution provider: cpu / cuda / coreml}
+\notesblock
+
+% ═══════════════════════════════════════════════════════════════════════════
+\section{End-to-End Scenario Checklist}
+% ═══════════════════════════════════════════════════════════════════════════
+
+\subsection{Scenario A — Greenfield college (full happy path)}
+
+\begin{itemize}[leftmargin=2em, itemsep=0.25em]
+  \item[\chk] A1. Platform admin creates college (desktop)
+  \item[\chk] A2. Platform admin creates super admin (desktop)
+  \item[\chk] A3. Super admin creates department + subjects (desktop or mobile)
+  \item[\chk] A4. Super admin creates dept admin (mobile)
+  \item[\chk] A5. Dept admin creates teacher (mobile)
+  \item[\chk] A6. Dept admin creates Section A \& B, assigns teacher (mobile)
+  \item[\chk] A7. Teacher adds students to Section A roster (mobile)
+  \item[\chk] A8. Teacher enrolls new student with 3 faces (mobile)
+  \item[\chk] A9. Teacher takes photo attendance for Section A (mobile)
+  \item[\chk] A10. Teacher downloads Excel + PDF report (mobile)
+\end{itemize}
+
+\fieldline{Scenario A result: Pass / Fail}
+\fieldline{Total time:}
+\notesblock
+
+\subsection{Scenario B — Section conflict}
+
+\begin{itemize}[leftmargin=2em, itemsep=0.25em]
+  \item[\chk] B1. Student in Section A of Subject X
+  \item[\chk] B2. Attempt add same student to Section B $\rightarrow$ blocked
+  \item[\chk] B3. Remove from A, add to B $\rightarrow$ succeeds
+\end{itemize}
+
+\fieldline{Scenario B result: Pass / Fail}
+\notesblock
+
+\subsection{Scenario C — Classroom simulation (scale)}
+
+\begin{itemize}[leftmargin=2em, itemsep=0.25em]
+  \item[\chk] C1. \fillin[1.5cm]\ students enrolled
+  \item[\chk] C2. Single photo captures \fillin[1.5cm]\ faces
+  \item[\chk] C3. Live stream session marks \fillin[1.5cm]\ students
+  \item[\chk] C4. False positive count: \fillin[1.5cm]
+  \item[\chk] C5. False negative count: \fillin[1.5cm]
+\end{itemize}
+
+\fieldline{Scenario C result: Pass / Fail}
+\notesblock
+
+% ═══════════════════════════════════════════════════════════════════════════
+\section{Bug Log}
+% ═══════════════════════════════════════════════════════════════════════════
+
+\footnotesize
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{0.07\linewidth} >{\raggedright\arraybackslash}p{0.07\linewidth} >{\raggedright\arraybackslash}p{0.09\linewidth} >{\raggedright\arraybackslash}p{0.14\linewidth} >{\raggedright\arraybackslash}p{0.13\linewidth} >{\raggedright\arraybackslash}p{0.13\linewidth} >{\raggedright\arraybackslash}p{0.13\linewidth} >{\raggedright\arraybackslash}p{0.12\linewidth}@{}}
+  \toprule
+  \textbf{Bug ID} & \textbf{TC ID} & \textbf{Severity} & \textbf{Summary} & \textbf{Steps} & \textbf{Expected} & \textbf{Actual} & \textbf{Status} \\
+  \midrule
+  BUG-001 & & Blocker/Major/Minor & & & & & Open/Fixed \\
+  BUG-002 & & & & & & & \\
+  BUG-003 & & & & & & & \\
+  BUG-004 & & & & & & & \\
+  BUG-005 & & & & & & & \\
+  \bottomrule
+\end{tabular}
+\normalsize
+
+% ═══════════════════════════════════════════════════════════════════════════
+\section{Test Summary Scorecard}
+% ═══════════════════════════════════════════════════════════════════════════
+
+\small
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{0.22\linewidth} >{\centering\arraybackslash}p{0.11\linewidth} >{\centering\arraybackslash}p{0.11\linewidth} >{\centering\arraybackslash}p{0.11\linewidth} >{\centering\arraybackslash}p{0.11\linewidth} >{\centering\arraybackslash}p{0.11\linewidth} >{\centering\arraybackslash}p{0.11\linewidth}@{}}
+  \toprule
+  \textbf{Area} & \textbf{Total} & \textbf{Passed} & \textbf{Failed} & \textbf{Blocked} & \textbf{N/A} & \textbf{\% Pass} \\
+  \midrule
+  Environment           & & & & & & \\
+  Auth                  & & & & & & \\
+  Desktop               & & & & & & \\
+  Dashboard \& Profile  & & & & & & \\
+  User management       & & & & & & \\
+  Sections              & & & & & & \\
+  Enrollment            & & & & & & \\
+  Attendance            & & & & & & \\
+  Reports               & & & & & & \\
+  RBAC                  & & & & & & \\
+  E2E scenarios         & & & & & & \\
+  \midrule
+  \textbf{TOTAL}        & & & & & & \\
+  \bottomrule
+\end{tabular}
+\normalsize
+
+\subsection{Sign-off}
+
+\small
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{0.18\linewidth} >{\raggedright\arraybackslash}p{0.32\linewidth} >{\raggedright\arraybackslash}p{0.32\linewidth} >{\raggedright\arraybackslash}p{0.12\linewidth}@{}}
+  \toprule
+  \textbf{Role} & \textbf{Name} & \textbf{Signature} & \textbf{Date} \\
+  \midrule
+  Tester   & & & \\
+  Reviewer & & & \\
+  \bottomrule
+\end{tabular}
+\normalsize
+
+\subsection{Final remarks}
+
+\fillinlong\\[0.6cm]
+\fillinlong\\[0.6cm]
+\fillinlong
+
+\vfill
+\begin{center}
+  \small\color{AttendGray}
+  Document version 1.0 --- aligned with Attend v1.0.0 feature set.
+\end{center}
+
+\end{document}

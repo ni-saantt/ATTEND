@@ -1,0 +1,471 @@
+% Attend — Practical Enrollment & Scale Test Workbook
+% Single-file LaTeX. Build: docs/latex/enrollment-practical/build.sh
+\documentclass[11pt,a4paper,oneside]{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage[margin=0.75in, headheight=14pt]{geometry}
+\usepackage{xcolor}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{longtable}
+\usepackage{enumitem}
+\usepackage{hyperref}
+\usepackage{fancyhdr}
+\usepackage{titlesec}
+\usepackage{microtype}
+
+\definecolor{AttendPrimary}{HTML}{1E3A5F}
+\definecolor{AttendAccent}{HTML}{2563EB}
+\definecolor{AttendGray}{HTML}{64748B}
+
+\hypersetup{
+  colorlinks=true,
+  linkcolor=AttendPrimary,
+  urlcolor=AttendAccent,
+  pdftitle={Attend Enrollment Practical Test},
+  pdfauthor={Attend Engineering Team}
+}
+
+\titleformat{\section}{\normalfont\Large\bfseries\color{AttendPrimary}}{\thesection}{0.75em}{}
+\titleformat{\subsection}{\normalfont\large\bfseries\color{AttendPrimary}}{\thesubsection}{0.6em}{}
+
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small\textcolor{AttendGray}{Attend — Enrollment Practical Test}}
+\fancyhead[R]{\small\textcolor{AttendGray}{v1.0}}
+\fancyfoot[C]{\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+
+\newcommand{\chk}{\fbox{\rule{0pt}{0.95ex}\rule{0.95ex}{0pt}}}
+\newcommand{\fillin}[1][3cm]{\rule{#1}{0.4pt}}
+\newcommand{\fillinlong}{\rule{0.72\textwidth}{0.4pt}}
+\newcommand{\notesblock}{\par\smallskip\noindent\textbf{Notes:}\ \fillinlong\par\smallskip}
+\newcommand{\fieldline}[1]{\par\smallskip\noindent\textbf{#1}\ \fillin\par}
+
+\newenvironment{fieldtable}{%
+  \smallskip\small
+  \begin{tabular}{@{}>{\raggedright\arraybackslash}p{0.34\linewidth} >{\raggedright\arraybackslash}p{0.60\linewidth}@{}}
+  \toprule
+  \textbf{Field} & \textbf{Value} \\
+  \midrule
+}{%
+  \bottomrule
+  \end{tabular}
+  \smallskip
+}
+
+\newcommand{\tcheadfour}{%
+  \toprule
+  \textbf{ID} & \textbf{Test case} & \textbf{Expected} & \textbf{Pass} \\
+  \midrule
+}
+
+\newcommand{\tcheadfive}{%
+  \toprule
+  \textbf{ID} & \textbf{Test case} & \textbf{Steps} & \textbf{Expected} & \textbf{Pass} \\
+  \midrule
+}
+
+% Batch log rows generated via pgffor (inside longtable)
+
+\begin{document}
+
+% ── Title ───────────────────────────────────────────────────────────────────
+\begin{titlepage}
+  \centering
+  \vspace*{1.2cm}
+  {\Huge\bfseries\color{AttendPrimary} Attend\par}
+  \vspace{0.35cm}
+  {\LARGE Practical Enrollment \& Scale Test Workbook\par}
+  \vspace{1cm}
+  {\large\color{AttendGray}
+    Hands-on enrollment sessions: 3-pose capture, batch logging,\\
+    section rosters, FAISS refresh, and immediate recognition checks.\par}
+  \vfill
+  \begin{tabular}{@{}ll@{}}
+    \textbf{Document version} & 1.0 \\
+    \textbf{Product version}  & Attend v1.0.0 \\
+    \textbf{Focus}            & Enrollment at scale (10--100+ students) \\
+    \textbf{Date}             & August 2026 \\
+  \end{tabular}
+  \vspace{1.2cm}
+\end{titlepage}
+
+\pagenumbering{roman}
+\tableofcontents
+\clearpage
+\pagenumbering{arabic}
+
+\noindent
+\textbf{How to use:} Set a target count (10 / 25 / 50 / 100+), complete the pilot walkthrough once, then log each student in Section~4. After every 10 enrollments, run the recognition smoke test (Section~6).
+
+% ═══════════════════════════════════════════════════════════════════════════
+\section{Test Session Header}
+% ═══════════════════════════════════════════════════════════════════════════
+
+\begin{fieldtable}
+\textbf{Test run ID} & ENR-TR-\rule{3.5cm}{0.4pt} \\
+\textbf{Tester name} & \\
+\textbf{Date} & \\
+\textbf{College / Department} & \\
+\textbf{Subject \& Section} & \\
+\textbf{Target enrollment count} & 10 / 25 / 50 / 100 / other: \\
+\textbf{Device (model + OS)} & \\
+\textbf{Backend URL} & \\
+\textbf{Logged-in role} & Teacher / Dept Admin / Super Admin \\
+\textbf{Overall result} & Pass / Fail / Partial \\
+\end{fieldtable}
+
+% ═══════════════════════════════════════════════════════════════════════════
+\section{Before You Start}
+% ═══════════════════════════════════════════════════════════════════════════
+
+\begin{itemize}[leftmargin=2em, itemsep=0.2em]
+  \item[\chk] \texttt{npm run dev} running; mobile \textbf{Test connection} OK
+  \item[\chk] Logged in with enrollment permission (Teacher / Dept Admin / Super Admin)
+  \item[\chk] Subject created; section created; teacher assigned to section
+  \item[\chk] Enrollment area has even lighting (no strong backlight)
+  \item[\chk] Printed or spreadsheet list of student reg\_no values ready
+  \item[\chk] Phone battery and storage sufficient for full batch
+  \item[\chk] Can verify Supabase: \texttt{students}, \texttt{face\_embeddings}, \texttt{primary-faces} bucket
+\end{itemize}
+
+\notesblock
+
+% ═══════════════════════════════════════════════════════════════════════════
+\section{Enrollment Scale Targets}
+% ═══════════════════════════════════════════════════════════════════════════
+
+\small
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{0.18\linewidth} >{\centering\arraybackslash}p{0.12\linewidth} >{\centering\arraybackslash}p{0.12\linewidth} >{\centering\arraybackslash}p{0.12\linewidth} >{\raggedright\arraybackslash}p{0.38\linewidth}@{}}
+  \toprule
+  \textbf{Batch} & \textbf{Target} & \textbf{Actual} & \textbf{Failed} & \textbf{Notes} \\
+  \midrule
+  A — Pilot (learn flow) & 5  & & & \\
+  B — Small              & 10 & & & \\
+  C — Medium             & 25 & & & \\
+  D — Large              & 50 & & & \\
+  E — Scale              & 100+ & & & \\
+  \bottomrule
+\end{tabular}
+\normalsize
+
+% ═══════════════════════════════════════════════════════════════════════════
+\section{Single-Student Walkthrough}
+% ═══════════════════════════════════════════════════════════════════════════
+
+\noindent\textit{Complete once before any batch. Confirms the full practical flow works end-to-end.}
+
+\smallskip
+\small
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{0.11\linewidth} >{\raggedright\arraybackslash}p{0.22\linewidth} >{\raggedright\arraybackslash}p{0.22\linewidth} >{\raggedright\arraybackslash}p{0.35\linewidth} >{\centering\arraybackslash}p{0.06\linewidth}@{}}
+  \tcheadfive
+  EPR-01 & Open Enroll & Dashboard $\rightarrow$ Enroll Student & enroll screen loads & \chk \\
+  EPR-02 & Step 1 scope & Select college/dept per role & Correct college \& department & \chk \\
+  EPR-03 & Step 2 details & Enter reg\_no + name $\rightarrow$ Continue & Validation passes & \chk \\
+  EPR-04 & Front pose & Look straight; capture & Step 1 of 3 complete & \chk \\
+  EPR-05 & Left pose & Turn head $\sim$30° left; capture & Step 2 of 3 complete & \chk \\
+  EPR-06 & Right pose & Turn head $\sim$30° right; capture & Auto-submit starts & \chk \\
+  EPR-07 & Success UI & Wait for API response & Alert: enrolled successfully & \chk \\
+  EPR-08 & Student list & Open View Students & Name + reg\_no visible & \chk \\
+  EPR-09 & DB embeddings & Check \texttt{face\_embeddings} & 3 rows: front, left, right & \chk \\
+  EPR-10 & Storage images & Check \texttt{primary-faces} bucket & primary.jpg, left.jpg, right.jpg & \chk \\
+  EPR-11 & Section roster & Section Students $\rightarrow$ Add & Student in section list & \chk \\
+  EPR-12 & Recognition & Take Attendance (same section) & Student matched by name & \chk \\
+  \bottomrule
+\end{tabular}
+\normalsize
+
+\fieldline{Pilot student reg\_no:}
+\fieldline{Enrollment duration (seconds):}
+\notesblock
+
+% ═══════════════════════════════════════════════════════════════════════════
+\section{Batch Enrollment Log (50 Students)}
+% ═══════════════════════════════════════════════════════════════════════════
+
+\noindent\textit{One row per student. After rows 10, 20, 30, 40, 50 — run Section~6 smoke test.}
+
+\smallskip
+{\footnotesize
+\setlength{\tabcolsep}{3pt}
+\begin{longtable}{@{}r >{\raggedright\arraybackslash}p{0.11\linewidth} >{\raggedright\arraybackslash}p{0.13\linewidth} >{\raggedright\arraybackslash}p{0.07\linewidth} c c c c c c@{}}
+  \toprule
+  \textbf{\#} & \textbf{reg\_no} & \textbf{name} & \textbf{time} & \textbf{sec} & \textbf{poses} & \textbf{list} & \textbf{sect} & \textbf{match} & \textbf{OK} \\
+  \midrule
+  \endhead
+  \bottomrule
+  \endfoot
+  1 & & & & & \chk & \chk & \chk & \chk & \chk \\
+  2 & & & & & \chk & \chk & \chk & \chk & \chk \\
+  3 & & & & & \chk & \chk & \chk & \chk & \chk \\
+  4 & & & & & \chk & \chk & \chk & \chk & \chk \\
+  5 & & & & & \chk & \chk & \chk & \chk & \chk \\
+  6 & & & & & \chk & \chk & \chk & \chk & \chk \\
+  7 & & & & & \chk & \chk & \chk & \chk & \chk \\
+  8 & & & & & \chk & \chk & \chk & \chk & \chk \\
+  9 & & & & & \chk & \chk & \chk & \chk & \chk \\
+  10 & & & & & \chk & \chk & \chk & \chk & \chk \\
+  11 & & & & & \chk & \chk & \chk & \chk & \chk \\
+  12 & & & & & \chk & \chk & \chk & \chk & \chk \\
+  13 & & & & & \chk & \chk & \chk & \chk & \chk \\
+  14 & & & & & \chk & \chk & \chk & \chk & \chk \\
+  15 & & & & & \chk & \chk & \chk & \chk & \chk \\
+  16 & & & & & \chk & \chk & \chk & \chk & \chk \\
+  17 & & & & & \chk & \chk & \chk & \chk & \chk \\
+  18 & & & & & \chk & \chk & \chk & \chk & \chk \\
+  19 & & & & & \chk & \chk & \chk & \chk & \chk \\
+  20 & & & & & \chk & \chk & \chk & \chk & \chk \\
+  21 & & & & & \chk & \chk & \chk & \chk & \chk \\
+  22 & & & & & \chk & \chk & \chk & \chk & \chk \\
+  23 & & & & & \chk & \chk & \chk & \chk & \chk \\
+  24 & & & & & \chk & \chk & \chk & \chk & \chk \\
+  25 & & & & & \chk & \chk & \chk & \chk & \chk \\
+  26 & & & & & \chk & \chk & \chk & \chk & \chk \\
+  27 & & & & & \chk & \chk & \chk & \chk & \chk \\
+  28 & & & & & \chk & \chk & \chk & \chk & \chk \\
+  29 & & & & & \chk & \chk & \chk & \chk & \chk \\
+  30 & & & & & \chk & \chk & \chk & \chk & \chk \\
+  31 & & & & & \chk & \chk & \chk & \chk & \chk \\
+  32 & & & & & \chk & \chk & \chk & \chk & \chk \\
+  33 & & & & & \chk & \chk & \chk & \chk & \chk \\
+  34 & & & & & \chk & \chk & \chk & \chk & \chk \\
+  35 & & & & & \chk & \chk & \chk & \chk & \chk \\
+  36 & & & & & \chk & \chk & \chk & \chk & \chk \\
+  37 & & & & & \chk & \chk & \chk & \chk & \chk \\
+  38 & & & & & \chk & \chk & \chk & \chk & \chk \\
+  39 & & & & & \chk & \chk & \chk & \chk & \chk \\
+  40 & & & & & \chk & \chk & \chk & \chk & \chk \\
+  41 & & & & & \chk & \chk & \chk & \chk & \chk \\
+  42 & & & & & \chk & \chk & \chk & \chk & \chk \\
+  43 & & & & & \chk & \chk & \chk & \chk & \chk \\
+  44 & & & & & \chk & \chk & \chk & \chk & \chk \\
+  45 & & & & & \chk & \chk & \chk & \chk & \chk \\
+  46 & & & & & \chk & \chk & \chk & \chk & \chk \\
+  47 & & & & & \chk & \chk & \chk & \chk & \chk \\
+  48 & & & & & \chk & \chk & \chk & \chk & \chk \\
+  49 & & & & & \chk & \chk & \chk & \chk & \chk \\
+  50 & & & & & \chk & \chk & \chk & \chk & \chk \\
+\end{longtable}
+}
+
+\fieldline{Batch total enrolled:}
+\fieldline{Batch total failed / retried:}
+\fieldline{Average time per student (sec):}
+\notesblock
+
+% ═══════════════════════════════════════════════════════════════════════════
+\section{Role \& Permission Checks}
+% ═══════════════════════════════════════════════════════════════════════════
+
+\small
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{0.11\linewidth} >{\raggedright\arraybackslash}p{0.14\linewidth} >{\raggedright\arraybackslash}p{0.12\linewidth} >{\raggedright\arraybackslash}p{0.14\linewidth} >{\raggedright\arraybackslash}p{0.18\linewidth} >{\raggedright\arraybackslash}p{0.22\linewidth} >{\centering\arraybackslash}p{0.06\linewidth}@{}}
+  \toprule
+  \textbf{ID} & \textbf{Role} & \textbf{Enroll?} & \textbf{College picker} & \textbf{Dept scope} & \textbf{Expected} & \textbf{Pass} \\
+  \midrule
+  EPR-R01 & TEACHER           & Yes & Hidden      & Own dept only     & Can enroll dept students     & \chk \\
+  EPR-R02 & DEPARTMENT\_ADMIN & Yes & Hidden      & Own dept          & Can enroll dept students     & \chk \\
+  EPR-R03 & SUPER\_ADMIN      & Yes & Visible     & Any in college    & Can pick college + dept      & \chk \\
+  EPR-R04 & PLATFORM\_ADMIN   & Yes & Visible     & As configured     & Mobile enroll works          & \chk \\
+  EPR-R05 & Other dept user   & No  & ---         & ---               & Blocked or wrong dept hidden & \chk \\
+  \bottomrule
+\end{tabular}
+\normalsize
+
+% ═══════════════════════════════════════════════════════════════════════════
+\section{Post-Batch Recognition Smoke Test}
+% ═══════════════════════════════════════════════════════════════════════════
+
+\noindent\textit{After every 10 enrollments, pick 3 random reg\_no values and verify attendance recognition in the correct section.}
+
+\smallskip
+\small
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{0.14\linewidth} >{\raggedright\arraybackslash}p{0.18\linewidth} >{\raggedright\arraybackslash}p{0.16\linewidth} >{\raggedright\arraybackslash}p{0.18\linewidth} >{\raggedright\arraybackslash}p{0.18\linewidth} >{\centering\arraybackslash}p{0.06\linewidth}@{}}
+  \toprule
+  \textbf{Checkpoint} & \textbf{reg\_no (sample 1)} & \textbf{reg\_no (sample 2)} & \textbf{reg\_no (sample 3)} & \textbf{All matched?} & \textbf{Pass} \\
+  \midrule
+  After 10 enrolled  & & & & & \chk \\
+  After 20 enrolled  & & & & & \chk \\
+  After 30 enrolled  & & & & & \chk \\
+  After 40 enrolled  & & & & & \chk \\
+  After 50 enrolled  & & & & & \chk \\
+  After 100 enrolled & & & & & \chk \\
+  \bottomrule
+\end{tabular}
+\normalsize
+
+\fieldline{Min confidence score observed:}
+\fieldline{Max confidence score observed:}
+\notesblock
+
+% ═══════════════════════════════════════════════════════════════════════════
+\section{Practical Failure Scenarios}
+% ═══════════════════════════════════════════════════════════════════════════
+
+\small
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{0.10\linewidth} >{\raggedright\arraybackslash}p{0.18\linewidth} >{\raggedright\arraybackslash}p{0.22\linewidth} >{\raggedright\arraybackslash}p{0.38\linewidth} >{\centering\arraybackslash}p{0.06\linewidth}@{}}
+  \tcheadfour
+  EPR-F01 & No face (front)       & Cover face; capture front       & Error: no face in front image        & \chk \\
+  EPR-F02 & Missing pose          & Skip left or right              & Cannot submit / validation error     & \chk \\
+  EPR-F03 & Duplicate reg\_no     & Re-use existing reg\_no         & API error; no duplicate student      & \chk \\
+  EPR-F04 & Network loss          & Airplane mode on submit         & Error shown; no orphan partial record  & \chk \\
+  EPR-F05 & Retry success         & Repeat full 3-pose after fail   & Second attempt succeeds              & \chk \\
+  EPR-F06 & Poor lighting         & Enroll in dim area              & Detect fail or clear user message    & \chk \\
+  EPR-F07 & Glasses / cap         & Enroll with accessories         & Record; note recognition impact      & \chk \\
+  EPR-F08 & Multiple faces        & Two people in frame             & Best face chosen or explicit failure & \chk \\
+  EPR-F09 & App backgrounded      & Switch apps mid-capture         & Resume or restart cleanly            & \chk \\
+  EPR-F10 & Camera permission off & Deny then re-allow camera       & Permission prompt works              & \chk \\
+  \bottomrule
+\end{tabular}
+\normalsize
+
+\notesblock
+
+% ═══════════════════════════════════════════════════════════════════════════
+\section{Edit Student \& Re-Capture Faces}
+% ═══════════════════════════════════════════════════════════════════════════
+
+\small
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{0.11\linewidth} >{\raggedright\arraybackslash}p{0.28\linewidth} >{\raggedright\arraybackslash}p{0.51\linewidth} >{\centering\arraybackslash}p{0.06\linewidth}@{}}
+  \tcheadfour
+  EPR-E01 & Edit name / reg\_no     & Saved in DB and student-list UI           & \chk \\
+  EPR-E02 & Add face — update left  & New left.jpg + left embedding in DB       & \chk \\
+  EPR-E03 & Add face — update right & New right.jpg + right embedding in DB     & \chk \\
+  EPR-E04 & Recognition after edit& Attendance still matches same student     & \chk \\
+  EPR-E05 & FAISS after re-capture  & No backend restart; match works immediately & \chk \\
+  \bottomrule
+\end{tabular}
+\normalsize
+
+% ═══════════════════════════════════════════════════════════════════════════
+\section{Performance \& Timing Log}
+% ═══════════════════════════════════════════════════════════════════════════
+
+\small
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{0.34\linewidth} >{\raggedright\arraybackslash}p{0.14\linewidth} c c c >{\centering\arraybackslash}p{0.06\linewidth}@{}}
+  \toprule
+  \textbf{Metric} & \textbf{Target} & \textbf{Batch B} & \textbf{Batch C} & \textbf{Batch D} & \textbf{Pass} \\
+  \midrule
+  Avg enrollment time (sec/student) & $<$ 60       & & & & \chk \\
+  Face detection failure rate       & $<$ 5\%      & & & & \chk \\
+  API / network error rate          & $<$ 2\%      & & & & \chk \\
+  Smoke-test recognition (sampled)  & 100\%        & & & & \chk \\
+  FAISS index refresh without restart & Immediate  & & & & \chk \\
+  Backend CPU per enrollment (approx) & Stable     & & & & \chk \\
+  \bottomrule
+\end{tabular}
+\normalsize
+
+\fieldline{Backend execution provider: cpu / cuda / coreml}
+\fieldline{Peak memory / load observed:}
+\notesblock
+
+% ═══════════════════════════════════════════════════════════════════════════
+\section{Full Classroom Simulation}
+% ═══════════════════════════════════════════════════════════════════════════
+
+\begin{itemize}[leftmargin=2em, itemsep=0.25em]
+  \item[\chk] S1. Enroll \fillin[1.2cm]\ students into department \fillin[2cm]
+  \item[\chk] S2. Add all to Section \fillin[1.2cm]\ roster (subject: \fillin[2cm])
+  \item[\chk] S3. Single-photo attendance: \fillin[1.2cm]\ faces detected in one frame
+  \item[\chk] S4. Live stream session: \fillin[1.2cm]\ students marked present
+  \item[\chk] S5. False positives: \fillin[1cm]\ \quad False negatives: \fillin[1cm]
+  \item[\chk] S6. Excel report row count matches enrolled + attendance records
+  \item[\chk] S7. PDF report readable and counts match mobile UI
+\end{itemize}
+
+\fieldline{Scenario result: Pass / Fail}
+\fieldline{Total wall-clock session time (hours):}
+\notesblock
+
+% ═══════════════════════════════════════════════════════════════════════════
+\section{Data Integrity Audit (Sample 10 Students)}
+% ═══════════════════════════════════════════════════════════════════════════
+
+\noindent\textit{Randomly pick 10 enrolled reg\_no values and verify backend data.}
+
+\smallskip
+{\footnotesize
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{0.14\linewidth} c c c c c@{}}
+  \toprule
+  \textbf{reg\_no} & \textbf{3 embed.} & \textbf{3 images} & \textbf{In sect.} & \textbf{Recognized} & \textbf{Pass} \\
+  \midrule
+  \endhead
+  \bottomrule
+  \endfoot
+  & \chk & \chk & \chk & \chk & \chk \\
+  & \chk & \chk & \chk & \chk & \chk \\
+  & \chk & \chk & \chk & \chk & \chk \\
+  & \chk & \chk & \chk & \chk & \chk \\
+  & \chk & \chk & \chk & \chk & \chk \\
+  & \chk & \chk & \chk & \chk & \chk \\
+  & \chk & \chk & \chk & \chk & \chk \\
+  & \chk & \chk & \chk & \chk & \chk \\
+  & \chk & \chk & \chk & \chk & \chk \\
+  & \chk & \chk & \chk & \chk & \chk \\
+\end{longtable}
+}
+
+% ═══════════════════════════════════════════════════════════════════════════
+\section{Practical Tips (Reference)}
+% ═══════════════════════════════════════════════════════════════════════════
+
+\begin{itemize}[leftmargin=2em, itemsep=0.3em]
+  \item Stand arm's-length from student; keep face inside on-screen guide.
+  \item Capture \textbf{front} first while student looks at camera lens.
+  \item \textbf{Left / right} poses: small head turn ($\sim$30°), not full profile.
+  \item Avoid enrolling two students with identical reg\_no — API will reject duplicates.
+  \item After each batch, open \textbf{Section Students} and confirm roster count matches log.
+  \item If recognition fails for a newly enrolled student, wait 5 sec and retry (FAISS cache invalidates on enroll).
+  \item For 50+ enrollments, swap testers or pause every 20 students to avoid fatigue errors.
+  \item Log failures immediately in the batch table \textbf{Notes} column (use separate sheet if needed).
+\end{itemize}
+
+% ═══════════════════════════════════════════════════════════════════════════
+\section{Summary Scorecard}
+% ═══════════════════════════════════════════════════════════════════════════
+
+\small
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{0.42\linewidth} >{\centering\arraybackslash}p{0.10\linewidth} >{\centering\arraybackslash}p{0.10\linewidth} >{\centering\arraybackslash}p{0.10\linewidth} >{\centering\arraybackslash}p{0.10\linewidth}@{}}
+  \toprule
+  \textbf{Area} & \textbf{Target} & \textbf{Actual} & \textbf{Pass \%} & \textbf{Pass} \\
+  \midrule
+  Pilot walkthrough (Section 4)     & 12 & & & \chk \\
+  Batch enrollments logged          & \fillin[0.8cm] & & & \chk \\
+  Recognition smoke tests           & 6  & & & \chk \\
+  Failure scenario coverage         & 10 & & & \chk \\
+  Data integrity audit (10 samples) & 10 & & & \chk \\
+  Classroom simulation              & 7  & & & \chk \\
+  \midrule
+  \textbf{OVERALL}                  &    & & & \chk \\
+  \bottomrule
+\end{tabular}
+\normalsize
+
+\subsection{Sign-off}
+
+\small
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{0.16\linewidth} >{\raggedright\arraybackslash}p{0.32\linewidth} >{\raggedright\arraybackslash}p{0.32\linewidth} >{\raggedright\arraybackslash}p{0.12\linewidth}@{}}
+  \toprule
+  \textbf{Role} & \textbf{Name} & \textbf{Signature} & \textbf{Date} \\
+  \midrule
+  Tester   & & & \\
+  Reviewer & & & \\
+  \bottomrule
+\end{tabular}
+\normalsize
+
+\subsection{Final remarks}
+
+\fillinlong\\[0.5cm]
+\fillinlong
+
+\vfill
+\begin{center}
+  \small\color{AttendGray}
+  Document version 1.0 — Attend v1.0.0 practical enrollment \& scale testing.
+\end{center}
+
+\end{document}
