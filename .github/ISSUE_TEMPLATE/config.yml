@@ -1,0 +1,5 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Testing documentation
+    url: https://github.com/nrk018/Attend/blob/main/docs/testing/README.md
+    about: Source workbooks (markdown / PDF) used by the test-run issue templates
