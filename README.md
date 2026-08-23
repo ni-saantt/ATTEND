@@ -133,15 +133,22 @@ VALUES ('admin@attend.com', '<hash-from-above>', 'PLATFORM_ADMIN', NULL, NULL);
 
 ### 4. Run services
 
+**One command (recommended)** — starts backend, mobile, admin-desktop, and shared TypeScript watch via Turborepo:
+
 ```bash
-# Terminal 1: Backend
-npm run backend
+npm run dev
+```
 
-# Terminal 2: Mobile
-npm run mobile
+This opens the Turbo TUI in one terminal. Press `Ctrl+C` to stop all services.
 
-# Terminal 3: Desktop (college admin)
-npm run desktop
+Verify backend: [http://localhost:8000/docs](http://localhost:8000/docs)
+
+**Optional — run individually** (for debugging one app):
+
+```bash
+npm run backend   # FastAPI only
+npm run mobile    # Expo only
+npm run desktop   # Electron admin only
 ```
 
 ---
@@ -166,7 +173,7 @@ npm run desktop
 | `npm run build:shared` | Build shared package only |
 | `npm run build:mobile` | Build mobile (expo export) |
 | `npm run build:desktop` | Build desktop (Vite) |
-| `npm run dev` | Run all dev servers (Turbo) |
+| `npm run dev` | Start all dev servers (backend + mobile + desktop + shared) via Turbo TUI |
 | `npm run mobile` | Start Expo dev server |
 | `npm run desktop` | Start Electron + Vite dev |
 | `npm run backend` | Start FastAPI with uvicorn |
@@ -204,6 +211,17 @@ Docs: `http://localhost:8000/docs` when backend is running.
 
 ## Documentation
 
+- [Software Documentation](docs/SOFTWARE_DOCUMENTATION.md) – Full technical specification (Markdown)
+- [Manual Test Plan (Markdown)](docs/testing/TEST_MANUAL.md) – Detailed QA workbook with checkboxes
+- [Manual Test Plan (PDF)](docs/testing/TEST_MANUAL.pdf) – Printable test manual
+- [Enrollment Practical Test (Markdown)](docs/testing/ENROLLMENT_PRACTICAL_TEST.md) – Scale enrollment & hands-on workbook
+- [Enrollment Practical Test (PDF)](docs/testing/ENROLLMENT_PRACTICAL_TEST.pdf) – 50-student batch log + recognition checks
+- [Test Environment Setup](docs/testing/TEST_ENV_SETUP.md) – Pre-test checklist
+- GitHub Issues → New issue – Clickable test-run checklists (enrollment, full QA, env setup)
+- [Section Management PDF](docs/latex/section-management/main.pdf) – Detailed section management guide
+- [Section Management LaTeX source](docs/latex/section-management/main.tex) – Rebuild with `./build.sh`
+- [System Architecture](docs/SYSTEM_ARCHITECTURE.md) – Architecture diagrams
+- [Deployment Guide](docs/DEPLOYMENT.md) – Production deployment
 - [Database schema](apps/backend/supabase/migrations/001_initial_schema.sql) – Tables, indexes, foreign keys
 
 ---
